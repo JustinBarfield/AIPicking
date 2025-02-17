@@ -1,4 +1,5 @@
 ﻿using Microsoft.CognitiveServices.Speech;
+using Microsoft.CognitiveServices.Speech.Audio;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -10,6 +11,8 @@ namespace AIPicking
     public class ViewModel : INotifyPropertyChanged
     {
         private string textBoxValue;
+        private string recognizedText;
+        private bool isRecording;
 
         public string TextBoxValue
         {
@@ -21,12 +24,33 @@ namespace AIPicking
             }
         }
 
+        public string RecognizedText
+        {
+            get { return recognizedText; }
+            set
+            {
+                recognizedText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsRecording
+        {
+            get { return isRecording; }
+            set
+            {
+                isRecording = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ICommand SynthesizeSpeechCommand { get; }
+        public ICommand RecognizeSpeechFromMicCommand { get; }
 
         public ViewModel()
         {
-            TextBoxValue = "Hello World";
             SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
+            RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -78,6 +102,22 @@ namespace AIPicking
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }
+        }
+
+        public async Task RecognizeSpeechFromMic()
+        {
+            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+
+            IsRecording = true;
+            using (var audioConfig = AudioConfig.FromDefaultMicrophoneInput())
+            using (var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig))
+            {
+                Console.WriteLine("Speak into your microphone.");
+                var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
+                RecognizedText = speechRecognitionResult.Text;
+                Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
+            }
+            IsRecording = false;
         }
     }
 

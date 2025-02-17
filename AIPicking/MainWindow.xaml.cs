@@ -23,6 +23,7 @@ namespace AIPicking
         public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = new ViewModel();
         }
     }
 }
