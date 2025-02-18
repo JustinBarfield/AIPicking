@@ -1,9 +1,13 @@
-﻿using Microsoft.CognitiveServices.Speech;
+﻿using AIPicking.ViewModels;
+using AIPicking.Views;
+using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using System;
 using System.ComponentModel;
+using System.Data;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace AIPicking
@@ -46,11 +50,13 @@ namespace AIPicking
 
         public ICommand SynthesizeSpeechCommand { get; }
         public ICommand RecognizeSpeechFromMicCommand { get; }
+        public ICommand OpenScanCartIDViewCommand { get; }
 
         public ViewModel()
         {
             SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
             RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
+            OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -118,6 +124,23 @@ namespace AIPicking
                 Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
             }
             IsRecording = false;
+        }
+
+        public async Task OpenScanCartIDView(object sender, RoutedEventArgs e)
+        {
+            var cartIDViewModel = new CartIDViewModel();
+            var cartIDView = new CartID { DataContext = cartIDViewModel };
+
+            var scanCartIDWindow = new Window
+            {
+                Title = "Scan Cart ID",
+                Content = cartIDView, // Set the content to the CartID user control
+                Width = 400,
+                Height = 300
+            };
+
+            cartIDViewModel.SynthesizeSpeech(); // do not await it or it will wait until its done to show the window
+            scanCartIDWindow.ShowDialog();
         }
     }
 
