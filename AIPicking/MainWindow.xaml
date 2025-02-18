@@ -17,6 +17,8 @@
             <Button Content="Recognize Speech from Mic" Width="200" Height="30" Command="{Binding RecognizeSpeechFromMicCommand}" Margin="0,0,0,10"/>
             <TextBox Text="{Binding RecognizedText}" Width="200" Height="30" Margin="0,0,0,10"/>
             <Ellipse Width="20" Height="20" Fill="Red" Visibility="{Binding IsRecording, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,10"/>
+            <Button Content="Scan Cart ID" Width="150" Height="30" Click="OpenScanCartIDView" Margin="0,0,0,10"/>
         </StackPanel>
     </Grid>
 </Window>
+

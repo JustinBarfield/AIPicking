@@ -25,5 +25,17 @@ namespace AIPicking
             InitializeComponent();
             this.DataContext = new ViewModel();
         }
+
+        private void OpenScanCartIDView(object sender, RoutedEventArgs e)
+        {
+            var scanCartIDWindow = new Window
+            {
+                Title = "Scan Cart ID",
+                Content = new Views.CartID(),
+                Width = 400,
+                Height = 300
+            };
+            scanCartIDWindow.ShowDialog();
+        }
     }
 }
