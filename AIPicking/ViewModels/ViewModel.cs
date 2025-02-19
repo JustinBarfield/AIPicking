@@ -62,6 +62,16 @@ namespace AIPicking
             }
         }
 
+        private string ticketNumber;
+        public string TicketNumber
+        {
+            get { return ticketNumber; }
+            set
+            {
+                ticketNumber = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand SynthesizeSpeechCommand { get; }
         public ICommand RecognizeSpeechFromMicCommand { get; }
         public ICommand OpenScanCartIDViewCommand { get; }
@@ -71,6 +81,7 @@ namespace AIPicking
             SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
             RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
+
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

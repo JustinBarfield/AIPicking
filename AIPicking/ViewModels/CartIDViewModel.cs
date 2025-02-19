@@ -70,6 +70,7 @@ namespace AIPicking.ViewModels
                 Console.WriteLine("Speak into your microphone.");
                 var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
                 RecognizedText = speechRecognitionResult.Text;
+                TicketNumber = RecognizedText;
                 Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
             }
             IsRecording = false;
@@ -93,6 +94,7 @@ namespace AIPicking.ViewModels
 
         private string recognizedText;
         private bool isRecording;
+        private string ticketNumber;
 
         public string RecognizedText
         {
@@ -110,6 +112,16 @@ namespace AIPicking.ViewModels
             set
             {
                 isRecording = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string TicketNumber
+        {
+            get { return ticketNumber; }
+            set
+            {
+                ticketNumber = value;
                 OnPropertyChanged();
             }
         }

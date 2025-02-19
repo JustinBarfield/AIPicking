@@ -121,7 +121,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="TextToSpeech\Program.cs" />
     <Compile Include="ViewModels\CartIDViewModel.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />
     <Compile Include="Views\HomePageUC.xaml.cs">

@@ -16,8 +16,10 @@
             <TextBlock Text="Scan Cart ID" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10">
                 <TextBlock Text="Cart ID:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
                 <TextBox Text="{Binding RecognizedText}" Width="200" Height="30" Margin="0,0,10,0"/>
             </StackPanel>
+            <Label Content="{Binding TicketNumber}" Width="200" Height="30" Margin="0,0,0,10"/>
             <!-- Assuming this is part of your CartID.xaml -->
             <Button Content="Enter" Command="{Binding ReturnToHomeCommand}" />
 
