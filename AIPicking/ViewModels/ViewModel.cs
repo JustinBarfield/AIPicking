@@ -74,31 +74,7 @@ namespace AIPicking
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        static void LanguageDetectionExample(TextAnalyticsClient client, string text)
-        {
-            DetectedLanguage detectedLanguage = client.DetectLanguage(text);
-            Console.WriteLine("Language:");
-            Console.WriteLine($"\t{detectedLanguage.Name},\tISO-6391: {detectedLanguage.Iso6391Name}\n");
-
-            bool isEnglishOrSpanish = detectedLanguage.Iso6391Name == "en" || detectedLanguage.Iso6391Name == "es";
-            if (isEnglishOrSpanish)
-            {
-                if (detectedLanguage.Iso6391Name == "en")
-                {
-                    Console.WriteLine("The detected language is English.");
-                   // RecognizedLang = "en";
-                }
-                else if (detectedLanguage.Iso6391Name == "es")
-                {
-                    Console.WriteLine("The detected language is Spanish.");
-                   // RecognizedLang = "es";
-                }
-            }
-            else
-            {
-                Console.WriteLine("The detected language is neither English nor Spanish.");
-            }
-        }
+      
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -193,16 +169,19 @@ namespace AIPicking
             var cartIDViewModel = new CartIDViewModel();
             var cartIDView = new CartID { DataContext = cartIDViewModel };
 
-            var scanCartIDWindow = new Window
-            {
-                Title = "Scan Cart ID",
-                Content = cartIDView, // Set the content to the CartID user control
-                Width = 400,
-                Height = 300
-            };
+            // Assuming you have a reference to the current window
+            var currentWindow = System.Windows.Application.Current.MainWindow;
 
-            cartIDViewModel.SynthesizeSpeech(); // do not await it or it will wait until its done to show the window
-            scanCartIDWindow.ShowDialog();
+            // Update the content of the current window
+            currentWindow.Content = cartIDView;
+
+            // Optionally, you can update the title or other properties of the current window
+            currentWindow.Title = "Scan Cart ID";
+            currentWindow.Width = 400;
+            currentWindow.Height = 300;
+
+            // Start the speech synthesis without awaiting it
+            cartIDViewModel.SynthesizeSpeech();
         }
     }
 

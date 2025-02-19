@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
+using System.Windows;
+using AIPicking.Views;
 
 namespace AIPicking.ViewModels
 {
@@ -15,6 +17,7 @@ namespace AIPicking.ViewModels
         {
             SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
             RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
+            ReturnToHomeCommand = new RelayCommand((async () => await ReturnToHome(null, null)));
         }
 
         static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
@@ -52,7 +55,7 @@ namespace AIPicking.ViewModels
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
 
-                 RecognizeSpeechFromMic();
+                RecognizeSpeechFromMic();
             }
         }
 
@@ -113,12 +116,30 @@ namespace AIPicking.ViewModels
 
         public ICommand SynthesizeSpeechCommand { get; }
         public ICommand RecognizeSpeechFromMicCommand { get; }
+        public ICommand ReturnToHomeCommand { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public async Task ReturnToHome(object sender, RoutedEventArgs e)
+        {
+            var viewModel = new ViewModel();
+            var view = new HomePageUC { DataContext = viewModel };
+
+            // Assuming you have a reference to the current window
+            var currentWindow = System.Windows.Application.Current.MainWindow;
+
+            // Update the content of the current window
+            currentWindow.Content = view;
+
+            // Optionally, you can update the title or other properties of the current window
+            currentWindow.Title = "Main Window";
+            currentWindow.Width = 400;
+            currentWindow.Height = 300;
         }
     }
 }

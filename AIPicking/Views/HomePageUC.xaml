@@ -1,11 +1,9 @@
-﻿<UserControl x:Class="AIPicking.Views.CartID"
+﻿<UserControl x:Class="AIPicking.Views.HomePageUC"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:AIPicking.Views"
-             xmlns:vm="clr-namespace:AIPicking.ViewModels"
-             d:DataContext="{d:DesignInstance Type=vm:CartIDViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -13,15 +11,12 @@
     </UserControl.Resources>
     <Grid>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="Scan Cart ID" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10">
-                <TextBlock Text="Cart ID:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBox Text="{Binding RecognizedText}" Width="200" Height="30" Margin="0,0,10,0"/>
-            </StackPanel>
-            <!-- Assuming this is part of your CartID.xaml -->
-            <Button Content="Enter" Command="{Binding ReturnToHomeCommand}" />
-
+            <TextBox Text="{Binding TextBoxValue, UpdateSourceTrigger=PropertyChanged}" Width="200" Height="30" Margin="0,0,0,10"/>
+            <Button Content="Synthesize Speech" Width="150" Height="30" Command="{Binding SynthesizeSpeechCommand}" Margin="0,0,0,10"/>
+            <Button Content="Recognize Speech from Mic" Width="200" Height="30" Command="{Binding RecognizeSpeechFromMicCommand}" Margin="0,0,0,10"/>
+            <TextBox Text="{Binding RecognizedText}" Width="200" Height="30" Margin="0,0,0,10"/>
             <Ellipse Width="20" Height="20" Fill="Red" Visibility="{Binding IsRecording, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,10"/>
+            <Button Content="Scan Cart ID" Width="150" Height="30" Command="{Binding OpenScanCartIDViewCommand}" Margin="0,0,0,10"/>
         </StackPanel>
     </Grid>
 </UserControl>
