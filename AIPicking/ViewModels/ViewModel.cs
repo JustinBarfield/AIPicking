@@ -1,5 +1,7 @@
 ﻿using AIPicking.ViewModels;
 using AIPicking.Views;
+using Azure;
+using Azure.AI.TextAnalytics;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using System;
@@ -9,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AIPicking
 {
@@ -16,6 +19,7 @@ namespace AIPicking
     {
         private string textBoxValue;
         private string recognizedText;
+        private string recognizedLang;
         private bool isRecording;
 
         public string TextBoxValue
@@ -34,6 +38,16 @@ namespace AIPicking
             set
             {
                 recognizedText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string RecognizedLang
+        {
+            get { return recognizedLang; }
+            set
+            {
+                recognizedLang = value;
                 OnPropertyChanged();
             }
         }
@@ -60,7 +74,31 @@ namespace AIPicking
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        static void LanguageDetectionExample(TextAnalyticsClient client, string text)
+        {
+            DetectedLanguage detectedLanguage = client.DetectLanguage(text);
+            Console.WriteLine("Language:");
+            Console.WriteLine($"\t{detectedLanguage.Name},\tISO-6391: {detectedLanguage.Iso6391Name}\n");
 
+            bool isEnglishOrSpanish = detectedLanguage.Iso6391Name == "en" || detectedLanguage.Iso6391Name == "es";
+            if (isEnglishOrSpanish)
+            {
+                if (detectedLanguage.Iso6391Name == "en")
+                {
+                    Console.WriteLine("The detected language is English.");
+                   // RecognizedLang = "en";
+                }
+                else if (detectedLanguage.Iso6391Name == "es")
+                {
+                    Console.WriteLine("The detected language is Spanish.");
+                   // RecognizedLang = "es";
+                }
+            }
+            else
+            {
+                Console.WriteLine("The detected language is neither English nor Spanish.");
+            }
+        }
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -69,6 +107,13 @@ namespace AIPicking
         // This example requires environment variables named "SPEECH_KEY" and "SPEECH_REGION"
         static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
         static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
+        static string languageKey = "59O1KpOwwOQwFTliUh931fyiATPPXJES1T5CJNg6dGAga7odm5G2JQQJ99BBACYeBjFXJ3w3AAAaACOGyRH3";
+        static string languageEndpoint = "https://seniordesignlanguage.cognitiveservices.azure.com/";
+
+        private static readonly AzureKeyCredential credentials = new AzureKeyCredential(languageKey);
+        private static readonly Uri endpoint = new Uri(languageEndpoint);
+
+
 
         static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
         {
@@ -107,6 +152,8 @@ namespace AIPicking
 
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
+
+                
             }
         }
 
@@ -124,6 +171,21 @@ namespace AIPicking
                 Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
             }
             IsRecording = false;
+
+            var client = new TextAnalyticsClient(endpoint, credentials);
+            Azure.AI.TextAnalytics.DetectedLanguage detectedLanguage = client.DetectLanguage(RecognizedText);
+            RecognizedLang = detectedLanguage.Iso6391Name;
+
+            string thankYouMessage = RecognizedLang == "es" ? "Gracias" : "Thank you";
+
+            var thankYouConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+            thankYouConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-GuyNeural";
+
+            using (var speechSynthesizer = new SpeechSynthesizer(thankYouConfig))
+            {
+                var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(thankYouMessage);
+                OutputSpeechSynthesisResult(speechSynthesisResult, thankYouMessage);
+            }
         }
 
         public async Task OpenScanCartIDView(object sender, RoutedEventArgs e)
