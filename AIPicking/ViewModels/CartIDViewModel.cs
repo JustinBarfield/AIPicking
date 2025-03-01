@@ -13,8 +13,11 @@ namespace AIPicking.ViewModels
 {
     public class CartIDViewModel : INotifyPropertyChanged
     {
+        private readonly IntentViewModel _intentViewModel;
+
         public CartIDViewModel()
         {
+            _intentViewModel = new IntentViewModel();
             SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
             RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
             ReturnToHomeCommand = new RelayCommand((async () => await ReturnToHome(null, null)));
@@ -72,7 +75,9 @@ namespace AIPicking.ViewModels
                 RecognizedText = speechRecognitionResult.Text;
                 TicketNumber = RecognizedText;
                 Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
+                _intentViewModel.InputText = RecognizedText;
             }
+            
             IsRecording = false;
         }
 
@@ -129,6 +134,7 @@ namespace AIPicking.ViewModels
         public ICommand SynthesizeSpeechCommand { get; }
         public ICommand RecognizeSpeechFromMicCommand { get; }
         public ICommand ReturnToHomeCommand { get; }
+        public ICommand AnalyzeCommand => _intentViewModel.AnalyzeCommand;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using static System.Net.Mime.MediaTypeNames;
+using Azure.Core;
+using Azure.AI.Language.Conversations;
+using Azure.Identity;
 
 namespace AIPicking
 {
@@ -223,5 +226,7 @@ namespace AIPicking
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
+
+
     }
 }
