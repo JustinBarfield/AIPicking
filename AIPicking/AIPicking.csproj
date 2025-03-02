@@ -149,11 +149,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="PickingItem.cs" />
     <Compile Include="ViewModels\CartIDViewModel.cs" />
     <Compile Include="ViewModels\IntentViewModel.cs" />
+    <Compile Include="ViewModels\PickItemViewModel.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />
     <Compile Include="Views\HomePageUC.xaml.cs">
       <DependentUpon>HomePageUC.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PickItemUC.xaml.cs">
+      <DependentUpon>PickItemUC.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\CartIDUC.xaml">
       <SubType>Designer</SubType>
@@ -175,6 +180,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\HomePageUC.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PickItemUC.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

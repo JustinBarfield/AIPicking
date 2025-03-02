@@ -21,6 +21,7 @@ namespace AIPicking.ViewModels
             SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
             RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
             ReturnToHomeCommand = new RelayCommand((async () => await ReturnToHome(null, null)));
+            EnterCommand = new RelayCommand(async () => await OpenPickItemView());
         }
 
         static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
@@ -74,11 +75,12 @@ namespace AIPicking.ViewModels
                 var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
                 RecognizedText = speechRecognitionResult.Text;
                 TicketNumber = RecognizedText;
+                CartID = RecognizedText;
                 Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
                 _intentViewModel.InputText = RecognizedText;
                 _intentViewModel.RegisteredLang = RecognizedLang;
             }
-            
+
             IsRecording = false;
         }
 
@@ -146,6 +148,7 @@ namespace AIPicking.ViewModels
         public ICommand SynthesizeSpeechCommand { get; }
         public ICommand RecognizeSpeechFromMicCommand { get; }
         public ICommand ReturnToHomeCommand { get; }
+        public ICommand EnterCommand { get; }
         public ICommand AnalyzeCommand => _intentViewModel.AnalyzeCommand;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -168,6 +171,26 @@ namespace AIPicking.ViewModels
 
             // Optionally, you can update the title or other properties of the current window
             currentWindow.Title = "Main Window";
+            currentWindow.Width = 400;
+            currentWindow.Height = 300;
+        }
+
+        public async Task OpenPickItemView()
+        {
+            var pickItemViewModel = new PickItemViewModel
+            {
+                
+            };
+            var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
+
+            // Assuming you have a reference to the current window
+            var currentWindow = System.Windows.Application.Current.MainWindow;
+
+            // Update the content of the current window
+            currentWindow.Content = pickItemView;
+
+            // Optionally, you can update the title or other properties of the current window
+            currentWindow.Title = "Pick Item";
             currentWindow.Width = 400;
             currentWindow.Height = 300;
         }

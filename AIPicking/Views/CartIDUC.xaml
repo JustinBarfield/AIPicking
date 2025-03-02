@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.openxmlformats.org/expression/blend/2008" 
              xmlns:local="clr-namespace:AIPicking.Views"
              xmlns:vm="clr-namespace:AIPicking.ViewModels"
              d:DataContext="{d:DesignInstance Type=vm:CartIDViewModel}"
@@ -16,12 +16,12 @@
             <TextBlock Text="Scan Cart ID" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10">
                 <TextBlock Text="Cart ID:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBox Text="{Binding RecognizedText}" Width="200" Height="30" Margin="0,0,10,0"/>
+                <TextBox Text="{Binding CartID, UpdateSourceTrigger=PropertyChanged}" Width="200" Height="30" Margin="0,0,10,0" />
             </StackPanel>
             <Label Content="{Binding TicketNumber}" Width="200" Height="30" Margin="0,0,0,10"/>
-            <Button Content="Enter" Command="{Binding ReturnToHomeCommand}" />
+            <Button Content="Enter" Command="{Binding EnterCommand}" />
             <Ellipse Width="20" Height="20" Fill="Red" Visibility="{Binding IsRecording, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,10"/>
             <Button Content="Analyze" Width="150" Height="30" Command="{Binding AnalyzeCommand}" Margin="0,0,0,10"/>
         </StackPanel>
-    </Grid>        
+    </Grid>
 </UserControl>
