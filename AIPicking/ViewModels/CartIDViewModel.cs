@@ -76,6 +76,7 @@ namespace AIPicking.ViewModels
                 TicketNumber = RecognizedText;
                 Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
                 _intentViewModel.InputText = RecognizedText;
+                _intentViewModel.RegisteredLang = RecognizedLang;
             }
             
             IsRecording = false;
@@ -98,6 +99,7 @@ namespace AIPicking.ViewModels
         }
 
         private string recognizedText;
+        private string recognizedLang;
         private bool isRecording;
         private string ticketNumber;
 
@@ -107,6 +109,16 @@ namespace AIPicking.ViewModels
             set
             {
                 recognizedText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string RecognizedLang
+        {
+            get { return recognizedLang; }
+            set
+            {
+                recognizedLang = value;
                 OnPropertyChanged();
             }
         }

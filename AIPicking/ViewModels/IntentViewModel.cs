@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System;
 using AIPicking;
+using Microsoft.CognitiveServices.Speech;
 
 public class IntentViewModel : INotifyPropertyChanged
 {
@@ -26,6 +27,17 @@ public class IntentViewModel : INotifyPropertyChanged
         }
     }
 
+    private string registeredLang;
+    public string RegisteredLang
+    {
+        get => registeredLang;
+        set
+        {
+            registeredLang = value;
+            OnPropertyChanged(nameof(RegisteredLang));
+        }
+    }
+
     public IntentViewModel()
     {
         client = new ConversationAnalysisClient(endpoint, credential);
@@ -33,7 +45,7 @@ public class IntentViewModel : INotifyPropertyChanged
     }
 
     public ICommand AnalyzeCommand { get; }
-
+    public ICommand SynthesizeSpeechCommand { get; }
     public async Task AnalyzeConversationAsync()
     {
         string projectName = "ConversationalUnderstanding";
@@ -47,6 +59,7 @@ public class IntentViewModel : INotifyPropertyChanged
                 {
                     text = InputText,
                     id = "1",
+                    language = RegisteredLang,
                     participantId = "1",
                 }
             },
@@ -68,13 +81,23 @@ public class IntentViewModel : INotifyPropertyChanged
         JsonElement conversationPrediction = conversationalTaskResult.GetProperty("result").GetProperty("prediction");
 
         Console.WriteLine($"Top intent: {conversationPrediction.GetProperty("topIntent").GetString()}");
+        Console.WriteLine(RegisteredLang);
 
         Console.WriteLine("Intents:");
         foreach (JsonElement intent in conversationPrediction.GetProperty("intents").EnumerateArray())
         {
-            Console.WriteLine($"Category: {intent.GetProperty("category").GetString()}");
-            Console.WriteLine($"Confidence: {intent.GetProperty("confidenceScore").GetSingle()}");
+            string category = intent.GetProperty("category").GetString();
+            float confidence = intent.GetProperty("confidenceScore").GetSingle();
+
+            Console.WriteLine($"Category: {category}");
+            Console.WriteLine($"Confidence: {confidence}");
             Console.WriteLine();
+
+            if (category == "Arrived at shelf" && confidence > 0.75f)
+            {
+                 await SynthesizeSpeech();
+                
+            }
         }
 
         Console.WriteLine("Entities:");
@@ -102,7 +125,47 @@ public class IntentViewModel : INotifyPropertyChanged
             }
         }
     }
+    public async Task CallSynthesizeSpeech()
+    {
+        await SynthesizeSpeech();
+    }
 
+    public async Task SynthesizeSpeech()
+    {
+        var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+        speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+
+        using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
+        {
+            string text = "You made it to the Shelf";
+            var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
+            OutputSpeechSynthesisResult(speechSynthesisResult, text);
+
+            
+        }
+    }
+    static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
+    static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
+    static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
+    {
+        switch (speechSynthesisResult.Reason)
+        {
+            case ResultReason.SynthesizingAudioCompleted:
+                Console.WriteLine($"Speech synthesized for text: [{text}]");
+                break;
+            case ResultReason.Canceled:
+                var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
+                Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
+
+                if (cancellation.Reason == CancellationReason.Error)
+                {
+                    Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                    Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
+                    Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
+                }
+                break;
+        }
+    }
     public event PropertyChangedEventHandler PropertyChanged;
     protected virtual void OnPropertyChanged(string propertyName)
     {
