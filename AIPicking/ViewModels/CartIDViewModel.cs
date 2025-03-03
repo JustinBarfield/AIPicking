@@ -81,8 +81,9 @@ namespace AIPicking.ViewModels
         }
         #region Properties
         private readonly IntentViewModel _intentViewModel;
-        static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
-        static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
+        static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
+        static string speechRegion = "eastus";
+       
         private string cartID;
         public string CartID
         {

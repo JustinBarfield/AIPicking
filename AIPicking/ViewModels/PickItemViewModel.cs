@@ -17,8 +17,9 @@ namespace AIPicking.ViewModels
     public class PickItemViewModel : INotifyPropertyChanged
     {
         #region Properties
-        static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
-        static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
+        static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
+        static string speechRegion = "eastus";
+    
         private PickingItem pickingItem;
         private string cartID;
         private string recognizedText;

@@ -17,8 +17,9 @@ public class IntentViewModel : INotifyPropertyChanged
     #region Properties
     private Uri endpoint = new Uri("https://seniordesignlanguage.cognitiveservices.azure.com/");
     private AzureKeyCredential credential = new AzureKeyCredential("59O1KpOwwOQwFTliUh931fyiATPPXJES1T5CJNg6dGAga7odm5G2JQQJ99BBACYeBjFXJ3w3AAAaACOGyRH3");
-    static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
-    static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
+    static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
+    static string speechRegion = "eastus";
+
     private ConversationAnalysisClient client;
 
     private string inputText;
