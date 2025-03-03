@@ -6,20 +6,16 @@ using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using System;
 using System.ComponentModel;
-using System.Data;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using static System.Net.Mime.MediaTypeNames;
-using Azure.Core;
-using Azure.AI.Language.Conversations;
-using Azure.Identity;
 
 namespace AIPicking
 {
     public class ViewModel : INotifyPropertyChanged
     {
+        #region Properties
         private string textBoxValue;
         private string recognizedText;
         private string recognizedLang;
@@ -81,22 +77,6 @@ namespace AIPicking
         public ICommand OpenScanCartIDViewCommand { get; }
         public ICommand OpenPickItemViewCommand { get; }
 
-        public ViewModel()
-        {
-            SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
-            RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
-            OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
-            OpenPickItemViewCommand = new RelayCommand(async () => await OpenPickItemView(null, null));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        // This example requires environment variables named "SPEECH_KEY" and "SPEECH_REGION"
         static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
         static string speechRegion = "eastus";
         static string languageKey = "59O1KpOwwOQwFTliUh931fyiATPPXJES1T5CJNg6dGAga7odm5G2JQQJ99BBACYeBjFXJ3w3AAAaACOGyRH3";
@@ -104,7 +84,9 @@ namespace AIPicking
 
         private static readonly AzureKeyCredential credentials = new AzureKeyCredential(languageKey);
         private static readonly Uri endpoint = new Uri(languageEndpoint);
+        #endregion
 
+        #region TTSSynthesis
         static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
         {
             switch (speechSynthesisResult.Reason)
@@ -143,6 +125,14 @@ namespace AIPicking
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }
+        }
+        #endregion
+        public ViewModel()
+        {
+            SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
+            RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
+            OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
+            OpenPickItemViewCommand = new RelayCommand(async () => await OpenPickItemView(null, null));
         }
 
         public async Task RecognizeSpeechFromMic()
@@ -199,7 +189,7 @@ namespace AIPicking
         public async Task OpenPickItemView(object sender, RoutedEventArgs e)
         {
             var cartIDViewModel = new CartIDViewModel(); // Create an instance of CartIDViewModel
-            var pickItemViewModel = new PickItemViewModel(); 
+            var pickItemViewModel = new PickItemViewModel();
             var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
 
             // Assuming you have a reference to the current window
@@ -213,34 +203,40 @@ namespace AIPicking
             currentWindow.Width = 400;
             currentWindow.Height = 300;
         }
-    }
 
-    public class RelayCommand : ICommand
-    {
-        private readonly Func<Task> _execute;
-        private readonly Func<bool> _canExecute;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        public RelayCommand(Func<Task> execute, Func<bool> canExecute = null)
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            _execute = execute;
-            _canExecute = canExecute;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        public event EventHandler CanExecuteChanged;
-
-        public bool CanExecute(object parameter)
+        public class RelayCommand : ICommand
         {
-            return _canExecute == null || _canExecute();
-        }
+            private readonly Func<Task> _execute;
+            private readonly Func<bool> _canExecute;
 
-        public async void Execute(object parameter)
-        {
-            await _execute();
-        }
+            public RelayCommand(Func<Task> execute, Func<bool> canExecute = null)
+            {
+                _execute = execute;
+                _canExecute = canExecute;
+            }
 
-        public void RaiseCanExecuteChanged()
-        {
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            public event EventHandler CanExecuteChanged;
+
+            public bool CanExecute(object parameter)
+            {
+                return _canExecute == null || _canExecute();
+            }
+
+            public async void Execute(object parameter)
+            {
+                await _execute();
+            }
+
+            public void RaiseCanExecuteChanged()
+            {
+                CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
     }
 }

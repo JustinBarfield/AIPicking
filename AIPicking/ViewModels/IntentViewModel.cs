@@ -8,12 +8,17 @@ using System.Windows.Input;
 using System;
 using AIPicking;
 using Microsoft.CognitiveServices.Speech;
+using System.Linq;
+using AIPicking.ViewModels;
+using static AIPicking.ViewModel;
 
 public class IntentViewModel : INotifyPropertyChanged
 {
+    #region Properties
     private Uri endpoint = new Uri("https://seniordesignlanguage.cognitiveservices.azure.com/");
     private AzureKeyCredential credential = new AzureKeyCredential("59O1KpOwwOQwFTliUh931fyiATPPXJES1T5CJNg6dGAga7odm5G2JQQJ99BBACYeBjFXJ3w3AAAaACOGyRH3");
-
+    static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
+    static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
     private ConversationAnalysisClient client;
 
     private string inputText;
@@ -38,14 +43,42 @@ public class IntentViewModel : INotifyPropertyChanged
         }
     }
 
+    private string intent;
+    public string Intent
+    {
+        get => intent;
+        set
+        {
+            intent = value;
+            OnPropertyChanged(nameof(Intent));
+        }
+    }
+
+    private float confidenceScore;
+    public float ConfidenceScore
+    {
+        get => confidenceScore;
+        set
+        {
+            confidenceScore = value;
+            OnPropertyChanged(nameof(ConfidenceScore));
+        }
+    }
+
+   
+
+    public ICommand AnalyzeCommand { get; }
+    public ICommand SynthesizeSpeechCommand { get; }
+    // Add a private field for PickItemViewModel
+    private PickItemViewModel pickItemViewModel;
+    #endregion
     public IntentViewModel()
     {
         client = new ConversationAnalysisClient(endpoint, credential);
         AnalyzeCommand = new RelayCommand(async () => await AnalyzeConversationAsync());
+        //pickItemViewModel = new PickItemViewModel();
     }
 
-    public ICommand AnalyzeCommand { get; }
-    public ICommand SynthesizeSpeechCommand { get; }
     public async Task AnalyzeConversationAsync()
     {
         string projectName = "ConversationalUnderstanding";
@@ -80,7 +113,13 @@ public class IntentViewModel : INotifyPropertyChanged
         JsonElement conversationalTaskResult = result.RootElement;
         JsonElement conversationPrediction = conversationalTaskResult.GetProperty("result").GetProperty("prediction");
 
-        Console.WriteLine($"Top intent: {conversationPrediction.GetProperty("topIntent").GetString()}");
+        Intent = conversationPrediction.GetProperty("topIntent").GetString();
+        ConfidenceScore = conversationPrediction.GetProperty("intents").EnumerateArray()
+            .FirstOrDefault(intent => intent.GetProperty("category").GetString() == Intent)
+            .GetProperty("confidenceScore").GetSingle();
+
+        Console.WriteLine($"Top intent: {Intent}");
+        Console.WriteLine($"Confidence: {ConfidenceScore}");
         Console.WriteLine(RegisteredLang);
 
         Console.WriteLine("Intents:");
@@ -95,7 +134,9 @@ public class IntentViewModel : INotifyPropertyChanged
 
             if (category == "Arrived at shelf" && confidence > 0.75f)
             {
-                 await SynthesizeSpeech();
+                await SynthesizeSpeech("you made it to the shelf");
+                await SynthesizeSpeech("are you ready for the next item?");
+                //await pickItemViewModel.RecognizeSpeechFromMic();
                 
             }
         }
@@ -125,27 +166,20 @@ public class IntentViewModel : INotifyPropertyChanged
             }
         }
     }
-    public async Task CallSynthesizeSpeech()
-    {
-        await SynthesizeSpeech();
-    }
 
-    public async Task SynthesizeSpeech()
+    public async Task SynthesizeSpeech(string text)
     {
         var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
         speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
 
         using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
         {
-            string text = "You made it to the Shelf";
+            
             var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
             OutputSpeechSynthesisResult(speechSynthesisResult, text);
-
-            
         }
     }
-    static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
-    static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
+
     static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
     {
         switch (speechSynthesisResult.Reason)
@@ -166,6 +200,7 @@ public class IntentViewModel : INotifyPropertyChanged
                 break;
         }
     }
+
     public event PropertyChangedEventHandler PropertyChanged;
     protected virtual void OnPropertyChanged(string propertyName)
     {

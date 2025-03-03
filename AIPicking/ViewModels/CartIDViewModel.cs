@@ -13,8 +13,7 @@ namespace AIPicking.ViewModels
 {
     public class CartIDViewModel : INotifyPropertyChanged
     {
-        private readonly IntentViewModel _intentViewModel;
-
+       
         public CartIDViewModel()
         {
             _intentViewModel = new IntentViewModel();
@@ -23,10 +22,7 @@ namespace AIPicking.ViewModels
             ReturnToHomeCommand = new RelayCommand((async () => await ReturnToHome(null, null)));
             EnterCommand = new RelayCommand(async () => await OpenPickItemView());
         }
-
-        static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
-        static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
-
+        
         static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
         {
             switch (speechSynthesisResult.Reason)
@@ -83,12 +79,10 @@ namespace AIPicking.ViewModels
 
             IsRecording = false;
         }
-
-        public async Task CallSynthesizeSpeech()
-        {
-            await SynthesizeSpeech();
-        }
-
+        #region Properties
+        private readonly IntentViewModel _intentViewModel;
+        static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
+        static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
         private string cartID;
         public string CartID
         {
@@ -157,7 +151,9 @@ namespace AIPicking.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        #endregion
 
+        #region Pages
         public async Task ReturnToHome(object sender, RoutedEventArgs e)
         {
             var viewModel = new ViewModel();
@@ -177,10 +173,7 @@ namespace AIPicking.ViewModels
 
         public async Task OpenPickItemView()
         {
-            var pickItemViewModel = new PickItemViewModel
-            {
-                
-            };
+            var pickItemViewModel = new PickItemViewModel();
             var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
 
             // Assuming you have a reference to the current window
@@ -194,5 +187,6 @@ namespace AIPicking.ViewModels
             currentWindow.Width = 400;
             currentWindow.Height = 300;
         }
+        #endregion
     }
 }

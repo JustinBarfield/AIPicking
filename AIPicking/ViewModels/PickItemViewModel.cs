@@ -10,15 +10,52 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using static AIPicking.ViewModel;
 
 namespace AIPicking.ViewModels
 {
     public class PickItemViewModel : INotifyPropertyChanged
     {
+        #region Properties
+        static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
+        static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
         private PickingItem pickingItem;
         private string cartID;
-        private static readonly SemaphoreSlim speechSemaphore = new SemaphoreSlim(1, 1);
+        private string recognizedText;
+        private string ticketNumber;
+        private readonly IntentViewModel _intentViewModel;
+        private string recognizedLang;
+        private bool isRecording;
 
+        public string RecognizedText
+        {
+            get => recognizedText;
+            set
+            {
+                recognizedText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string TicketNumber
+        {
+            get => ticketNumber;
+            set
+            {
+                ticketNumber = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsRecording
+        {
+            get => isRecording;
+            set
+            {
+                isRecording = value;
+                OnPropertyChanged();
+            }
+        }
         public PickingItem PickingItem
         {
             get => pickingItem;
@@ -102,52 +139,33 @@ namespace AIPicking.ViewModels
         public ICommand ConfirmCommand { get; }
         public ICommand SkipItemCommand { get; }
         public ICommand HomeCommand { get; }
-
+        #endregion
         public PickItemViewModel()
         {
-            PickingItem = new PickingItem();
+            _intentViewModel = new IntentViewModel();
+            PickingItem = new PickingItem
+            {
+                Quantity = "10",
+                Title = "Sample Item",
+                Location = "Aisle 3, Shelf 2",
+                Description = "This is a sample item for picking.",
+                ItemsLeft = "50",
+                SerialNumber = "123"
+            };
             ConfirmCommand = new RelayCommand(OnConfirm);
             SkipItemCommand = new RelayCommand(OnSkipItem);
             HomeCommand = new RelayCommand(OnHome);
 
-            // Generate random picking items when the view model is instantiated
-            var randomItems = GenerateRandomPickingItems(1);
-            if (randomItems.Length > 0)
-            {
-                PickingItem = randomItems[0];
-            }
-
             // Start the asynchronous initialization
-            InitializeAsync();
+            // InitializeAsync();
+            SynthesizeAllInfo();
         }
 
         private async void InitializeAsync()
         {
             await SynthesizeAllInfo();
-            await SynthesizeSpeech("Are you at the shelf?");
         }
-
-        public PickingItem[] GenerateRandomPickingItems(int count)
-        {
-            var random = new Random();
-            var items = new PickingItem[count];
-
-            for (int i = 0; i < count; i++)
-            {
-                items[i] = new PickingItem
-                {
-                    Quantity = random.Next(1, 100).ToString(),
-                    Title = $"Item {i + 1}",
-                    Location = $"Location {random.Next(1, 50)}",
-                    Description = $"Description for item {i + 1}",
-                    ItemsLeft = random.Next(0, 100).ToString(),
-                    SerialNumber = Guid.NewGuid().ToString()
-                };
-            }
-
-            return items;
-        }
-
+        #region Buttons
         private async Task OnConfirm()
         {
             // Implement the logic for the Confirm button
@@ -175,9 +193,9 @@ namespace AIPicking.ViewModels
             currentWindow.Height = 300;
         }
 
-        static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
-        static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
+        #endregion
 
+        #region TTS
         static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
         {
             switch (speechSynthesisResult.Reason)
@@ -201,9 +219,7 @@ namespace AIPicking.ViewModels
 
         private async Task SynthesizeAllInfo()
         {
-            await speechSemaphore.WaitAsync();
-            try
-            {
+            
                 var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
                 speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
 
@@ -213,66 +229,49 @@ namespace AIPicking.ViewModels
                     var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                     OutputSpeechSynthesisResult(speechSynthesisResult, text);
                 }
-                speechSemaphore.Release();
-                // Call the method to ask if the user is at the shelf
-                
-            }
-            finally
-            {
-                speechSemaphore.Release();
-            }
+
+                // Ask if the user is at the shelf
+                await AskIfAtShelf();
+            
         }
 
         public async Task SynthesizeSpeech(string text)
         {
+            
+                var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+                speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+
+                using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
+                {
+                    var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
+                    OutputSpeechSynthesisResult(speechSynthesisResult, text);
+
+                    await RecognizeSpeechFromMic();
+                }
+           
+        }
+
+        private async Task AskIfAtShelf()
+        {
+
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
             speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
+                string text = "Are you at the shelf?";
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
-
-                await RecognizeSpeechFromMic();
             }
+
+            // Recognize speech from the mic and analyze the intent
+            await RecognizeSpeechFromMic();
+
         }
 
-        private string recognizedText;
-        private string ticketNumber;
-        private IntentViewModel _intentViewModel;
-        private string recognizedLang;
-        private bool isRecording;
+        #endregion
 
-        public string RecognizedText
-        {
-            get => recognizedText;
-            set
-            {
-                recognizedText = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string TicketNumber
-        {
-            get => ticketNumber;
-            set
-            {
-                ticketNumber = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsRecording
-        {
-            get => isRecording;
-            set
-            {
-                isRecording = value;
-                OnPropertyChanged();
-            }
-        }
-
+        #region STT
         public async Task RecognizeSpeechFromMic()
         {
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
@@ -287,8 +286,8 @@ namespace AIPicking.ViewModels
                 TicketNumber = RecognizedText;
                 CartID = RecognizedText;
                 Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
-                //_intentViewModel.InputText = RecognizedText;
-                //_intentViewModel.RegisteredLang = recognizedLang;
+                _intentViewModel.InputText = RecognizedText;
+                _intentViewModel.RegisteredLang = recognizedLang;
 
                 // Analyze the recognized speech
                 await AnalyzeRecognizedSpeech(RecognizedText);
@@ -297,37 +296,31 @@ namespace AIPicking.ViewModels
             IsRecording = false;
         }
 
+        public ICommand AnalyzeCommand => _intentViewModel.AnalyzeCommand;
+
         private async Task AnalyzeRecognizedSpeech(string recognizedText)
         {
+            // Set the input text and language
+            _intentViewModel.InputText = recognizedText;
+            _intentViewModel.RegisteredLang = recognizedLang;
+
+            // Execute the AnalyzeCommand
+            if (_intentViewModel.AnalyzeCommand.CanExecute(null))
+            {
+                _intentViewModel.AnalyzeCommand.Execute(null);
+            }
+
+            // Wait for the analysis to complete (assuming AnalyzeCommand is asynchronous)
+            await Task.Delay(1000); // Adjust the delay as needed
+
+            // Retrieve the intent and confidence score
+            var intent = _intentViewModel.Intent;
+            var confidenceScore = _intentViewModel.ConfidenceScore;
+
            
-           
-
-            if (intent == "yes" && confidenceScore > 0.5f)
-            {
-                await SynthesizeSpeech("Thank you");
-            }
         }
-
-        private async Task AskIfAtShelf()
-        {
-            await speechSemaphore.WaitAsync();
-            try
-            {
-                var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-                speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-                using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
-                {
-                    string text = "Are you at the shelf?";
-                    var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
-                    OutputSpeechSynthesisResult(speechSynthesisResult, text);
-                }
-            }
-            finally
-            {
-                speechSemaphore.Release();
-            }
-        }
+        #endregion
+       
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
