@@ -19,7 +19,6 @@ namespace AIPicking.ViewModels
         #region Properties
         static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
         static string speechRegion = "eastus";
-    
         private PickingItem pickingItem;
         private string cartID;
         private string recognizedText;
@@ -149,7 +148,7 @@ namespace AIPicking.ViewModels
                 Quantity = "10",
                 Title = "Sample Item",
                 Location = "Aisle 3, Shelf 2",
-                Description = "This is a sample item for picking.",
+                Description = "This is a sample.",
                 ItemsLeft = "50",
                 SerialNumber = "123"
             };
