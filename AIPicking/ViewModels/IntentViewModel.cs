@@ -137,7 +137,7 @@ public class IntentViewModel : INotifyPropertyChanged
             {
                 await SynthesizeSpeech("you made it to the shelf");
                 await SynthesizeSpeech("are you ready for the next item?");
-                //await pickItemViewModel.RecognizeSpeechFromMic();
+                
                 
             }
         }

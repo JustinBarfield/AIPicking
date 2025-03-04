@@ -14,76 +14,27 @@ namespace AIPicking.ViewModels
     public class CartIDViewModel : INotifyPropertyChanged
     {
        
-        public CartIDViewModel()
+ public CartIDViewModel()
         {
             _intentViewModel = new IntentViewModel();
-            SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
-            RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
-            ReturnToHomeCommand = new RelayCommand((async () => await ReturnToHome(null, null)));
+            speechToTextViewModel = new SpeechToTextViewModel();
+
+            RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
+            {
+                 speechToTextViewModel.RecognizeSpeechFromMic();
+                Console.WriteLine($"Recognized Text: {speechToTextViewModel.RecognizedText}");
+                CartID = speechToTextViewModel.RecognizedText;
+                Console.WriteLine($"CartID set to: {CartID}");
+            });
+
+            ReturnToHomeCommand = new RelayCommand(async () => await ReturnToHome(null, null));
             EnterCommand = new RelayCommand(async () => await OpenPickItemView());
         }
         
-        static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
-        {
-            switch (speechSynthesisResult.Reason)
-            {
-                case ResultReason.SynthesizingAudioCompleted:
-                    Console.WriteLine($"Speech synthesized for text: [{text}]");
-                    break;
-                case ResultReason.Canceled:
-                    var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
-                    Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
-
-                    if (cancellation.Reason == CancellationReason.Error)
-                    {
-                        Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-                        Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
-                        Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
-                    }
-                    break;
-            }
-        }
-
-        public async Task SynthesizeSpeech()
-        {
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-            using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
-            {
-                string text = "Please say the cart I D";
-                var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
-                OutputSpeechSynthesisResult(speechSynthesisResult, text);
-
-                RecognizeSpeechFromMic();
-            }
-        }
-
-        public async Task RecognizeSpeechFromMic()
-        {
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-
-            IsRecording = true;
-            using (var audioConfig = AudioConfig.FromDefaultMicrophoneInput())
-            using (var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig))
-            {
-                Console.WriteLine("Speak into your microphone.");
-                var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
-                RecognizedText = speechRecognitionResult.Text;
-                TicketNumber = RecognizedText;
-                CartID = RecognizedText;
-                Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
-                _intentViewModel.InputText = RecognizedText;
-                _intentViewModel.RegisteredLang = RecognizedLang;
-            }
-
-            IsRecording = false;
-        }
         #region Properties
         private readonly IntentViewModel _intentViewModel;
-        static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
-        static string speechRegion = "eastus";
-       
+        private readonly SpeechToTextViewModel speechToTextViewModel;
+
         private string cartID;
         public string CartID
         {

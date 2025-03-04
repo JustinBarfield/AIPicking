@@ -17,9 +17,6 @@ namespace AIPicking
     {
         #region Properties
         private string textBoxValue;
-        private string recognizedText;
-        private string recognizedLang;
-        private bool isRecording;
 
         public string TextBoxValue
         {
@@ -31,36 +28,7 @@ namespace AIPicking
             }
         }
 
-        public string RecognizedText
-        {
-            get { return recognizedText; }
-            set
-            {
-                recognizedText = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string RecognizedLang
-        {
-            get { return recognizedLang; }
-            set
-            {
-                recognizedLang = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsRecording
-        {
-            get { return isRecording; }
-            set
-            {
-                isRecording = value;
-                OnPropertyChanged();
-            }
-        }
-
+       
         private string ticketNumber;
         public string TicketNumber
         {
@@ -72,99 +40,32 @@ namespace AIPicking
             }
         }
 
-        public ICommand SynthesizeSpeechCommand { get; }
+       
         public ICommand RecognizeSpeechFromMicCommand { get; }
         public ICommand OpenScanCartIDViewCommand { get; }
         public ICommand OpenPickItemViewCommand { get; }
+        public ICommand SynthesizeSpeechCommand { get; }
 
-        static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
-        static string speechRegion = "eastus";
-        static string languageKey = "59O1KpOwwOQwFTliUh931fyiATPPXJES1T5CJNg6dGAga7odm5G2JQQJ99BBACYeBjFXJ3w3AAAaACOGyRH3";
-        static string languageEndpoint = "https://seniordesignlanguage.cognitiveservices.azure.com/";
-
-        private static readonly AzureKeyCredential credentials = new AzureKeyCredential(languageKey);
-        private static readonly Uri endpoint = new Uri(languageEndpoint);
+      
         #endregion
 
-        #region TTSSynthesis
-        static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
-        {
-            switch (speechSynthesisResult.Reason)
-            {
-                case ResultReason.SynthesizingAudioCompleted:
-                    Console.WriteLine($"Speech synthesized for text: [{text}]");
-                    break;
-                case ResultReason.Canceled:
-                    var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
-                    Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
-
-                    if (cancellation.Reason == CancellationReason.Error)
-                    {
-                        Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-                        Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
-                        Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        public async Task SynthesizeSpeech()
-        {
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-
-            // The neural multilingual voice can speak different languages based on the input text.
-            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-            using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
-            {
-                // Get text from the ViewModel and synthesize to the default speaker.
-                string text = TextBoxValue;
-
-                var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
-                OutputSpeechSynthesisResult(speechSynthesisResult, text);
-            }
-        }
-        #endregion
+      
+        private readonly TextToSpeechViewModel textToSpeechViewModel;
+        private readonly SpeechToTextViewModel speechToTextViewModel;
         public ViewModel()
         {
-            SynthesizeSpeechCommand = new RelayCommand(async () => await SynthesizeSpeech());
-            RecognizeSpeechFromMicCommand = new RelayCommand(async () => await RecognizeSpeechFromMic());
+            textToSpeechViewModel = new TextToSpeechViewModel();
+            speechToTextViewModel = new SpeechToTextViewModel();
+            SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech(TextBoxValue));
+            RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
+            {
+                await speechToTextViewModel.RecognizeSpeechFromMic();
+                TextBoxValue = speechToTextViewModel.RecognizedText;
+            });
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
             OpenPickItemViewCommand = new RelayCommand(async () => await OpenPickItemView(null, null));
         }
-
-        public async Task RecognizeSpeechFromMic()
-        {
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-
-            IsRecording = true;
-            using (var audioConfig = AudioConfig.FromDefaultMicrophoneInput())
-            using (var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig))
-            {
-                Console.WriteLine("Speak into your microphone.");
-                var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
-                RecognizedText = speechRecognitionResult.Text;
-                Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
-            }
-            IsRecording = false;
-
-            var client = new TextAnalyticsClient(endpoint, credentials);
-            Azure.AI.TextAnalytics.DetectedLanguage detectedLanguage = client.DetectLanguage(RecognizedText);
-            RecognizedLang = detectedLanguage.Iso6391Name;
-
-            string thankYouMessage = RecognizedLang == "es" ? "Gracias" : "Thank you";
-
-            var thankYouConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            thankYouConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-GuyNeural";
-
-            using (var speechSynthesizer = new SpeechSynthesizer(thankYouConfig))
-            {
-                var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(thankYouMessage);
-                OutputSpeechSynthesisResult(speechSynthesisResult, thankYouMessage);
-            }
-        }
+       
 
         public async Task OpenScanCartIDView(object sender, RoutedEventArgs e)
         {
@@ -183,7 +84,9 @@ namespace AIPicking
             currentWindow.Height = 300;
 
             // Start the speech synthesis without awaiting it
-            cartIDViewModel.SynthesizeSpeech();
+            // cartIDViewModel.SynthesizeSpeech();
+            await textToSpeechViewModel.SynthesizeSpeech("Say the cart ID");
+            await speechToTextViewModel.RecognizeSpeechFromMic();
         }
 
         public async Task OpenPickItemView(object sender, RoutedEventArgs e)

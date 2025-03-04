@@ -17,13 +17,12 @@ namespace AIPicking.ViewModels
     public class PickItemViewModel : INotifyPropertyChanged
     {
         #region Properties
-        static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
-        static string speechRegion = "eastus";
+       
         private PickingItem pickingItem;
         private string cartID;
         private string recognizedText;
         private string ticketNumber;
-        private readonly IntentViewModel _intentViewModel;
+        
         private string recognizedLang;
         private bool isRecording;
 
@@ -139,10 +138,13 @@ namespace AIPicking.ViewModels
         public ICommand ConfirmCommand { get; }
         public ICommand SkipItemCommand { get; }
         public ICommand HomeCommand { get; }
+        private readonly SpeechToTextViewModel speechToTextViewModel;
+        private readonly TextToSpeechViewModel textToSpeechViewModel;
         #endregion
         public PickItemViewModel()
         {
-            _intentViewModel = new IntentViewModel();
+            textToSpeechViewModel = new TextToSpeechViewModel();
+
             PickingItem = new PickingItem
             {
                 Quantity = "10",
@@ -156,15 +158,11 @@ namespace AIPicking.ViewModels
             SkipItemCommand = new RelayCommand(OnSkipItem);
             HomeCommand = new RelayCommand(OnHome);
 
-            // Start the asynchronous initialization
-            // InitializeAsync();
-            SynthesizeAllInfo();
+
+            textToSpeechViewModel.SynthesizeAllInfo(Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
         }
 
-        private async void InitializeAsync()
-        {
-            await SynthesizeAllInfo();
-        }
+        
         #region Buttons
         private async Task OnConfirm()
         {
@@ -217,108 +215,16 @@ namespace AIPicking.ViewModels
             }
         }
 
-        private async Task SynthesizeAllInfo()
-        {
-            
-                var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-                speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-                using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
-                {
-                    string text = $"Item: {Title}, Quantity: {Quantity}, Location: {Location}, Description: {Description}, Items Left: {ItemsLeft}, Serial Number: {SerialNumber}";
-                    var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
-                    OutputSpeechSynthesisResult(speechSynthesisResult, text);
-                }
-
-                // Ask if the user is at the shelf
-                await AskIfAtShelf();
-            
-        }
-
-        public async Task SynthesizeSpeech(string text)
-        {
-            
-                var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-                speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-                using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
-                {
-                    var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
-                    OutputSpeechSynthesisResult(speechSynthesisResult, text);
-
-                    await RecognizeSpeechFromMic();
-                }
-           
-        }
-
-        private async Task AskIfAtShelf()
-        {
-
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-            using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
-            {
-                string text = "Are you at the shelf?";
-                var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
-                OutputSpeechSynthesisResult(speechSynthesisResult, text);
-            }
-
-            // Recognize speech from the mic and analyze the intent
-            await RecognizeSpeechFromMic();
-
-        }
+        
 
         #endregion
 
         #region STT
-        public async Task RecognizeSpeechFromMic()
-        {
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+       
 
-            IsRecording = true;
-            using (var audioConfig = AudioConfig.FromDefaultMicrophoneInput())
-            using (var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig))
-            {
-                Console.WriteLine("Speak into your microphone.");
-                var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
-                RecognizedText = speechRecognitionResult.Text;
-                TicketNumber = RecognizedText;
-                CartID = RecognizedText;
-                Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
-                _intentViewModel.InputText = RecognizedText;
-                _intentViewModel.RegisteredLang = recognizedLang;
+        
 
-                // Analyze the recognized speech
-                await AnalyzeRecognizedSpeech(RecognizedText);
-            }
-
-            IsRecording = false;
-        }
-
-        public ICommand AnalyzeCommand => _intentViewModel.AnalyzeCommand;
-
-        private async Task AnalyzeRecognizedSpeech(string recognizedText)
-        {
-            // Set the input text and language
-            _intentViewModel.InputText = recognizedText;
-            _intentViewModel.RegisteredLang = recognizedLang;
-
-            // Execute the AnalyzeCommand
-            if (_intentViewModel.AnalyzeCommand.CanExecute(null))
-            {
-                _intentViewModel.AnalyzeCommand.Execute(null);
-            }
-
-            // Wait for the analysis to complete (assuming AnalyzeCommand is asynchronous)
-            await Task.Delay(1000); // Adjust the delay as needed
-
-            // Retrieve the intent and confidence score
-            var intent = _intentViewModel.Intent;
-            var confidenceScore = _intentViewModel.ConfidenceScore;
-
-           
-        }
+       
         #endregion
        
 

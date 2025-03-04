@@ -153,6 +153,8 @@
     <Compile Include="ViewModels\CartIDViewModel.cs" />
     <Compile Include="ViewModels\IntentViewModel.cs" />
     <Compile Include="ViewModels\PickItemViewModel.cs" />
+    <Compile Include="ViewModels\SpeechToTextViewModel.cs" />
+    <Compile Include="ViewModels\TextToSpeechViewModel.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />
     <Compile Include="Views\HomePageUC.xaml.cs">
       <DependentUpon>HomePageUC.xaml</DependentUpon>
