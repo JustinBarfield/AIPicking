@@ -18,9 +18,9 @@
                 <TextBlock Text="Cart ID:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <TextBox Text="{Binding CartID, UpdateSourceTrigger=PropertyChanged}" Width="200" Height="30" Margin="0,0,10,0" />
             </StackPanel>
-            <Label Content="{Binding TicketNumber}" Width="200" Height="30" Margin="0,0,0,10"/>
-            <Button Content="Enter" Command="{Binding EnterCommand}" />
             <Ellipse Width="20" Height="20" Fill="Red" Visibility="{Binding IsRecording, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,10"/>
+
+            <Button Content="Enter" Command="{Binding EnterCommand}" />
             <Button Content="Analyze" Width="150" Height="30" Command="{Binding AnalyzeCommand}" Margin="0,0,0,10"/>
         </StackPanel>
     </Grid>

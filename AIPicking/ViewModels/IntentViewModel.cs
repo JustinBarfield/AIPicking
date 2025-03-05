@@ -76,11 +76,11 @@ public class IntentViewModel : INotifyPropertyChanged
     public IntentViewModel()
     {
         client = new ConversationAnalysisClient(endpoint, credential);
-        AnalyzeCommand = new RelayCommand(async () => await AnalyzeConversationAsync());
+        //AnalyzeCommand = new RelayCommand(async () => await AnalyzeConversationAsync());
         //pickItemViewModel = new PickItemViewModel();
     }
 
-    public async Task AnalyzeConversationAsync()
+    public async Task AnalyzeConversationAsync(string InputText,string RegisteredLang)
     {
         string projectName = "ConversationalUnderstanding";
         string deploymentName = "PickingAI";
@@ -135,8 +135,8 @@ public class IntentViewModel : INotifyPropertyChanged
 
             if (category == "Arrived at shelf" && confidence > 0.75f)
             {
-                await SynthesizeSpeech("you made it to the shelf");
-                await SynthesizeSpeech("are you ready for the next item?");
+                await SynthesizeSpeech("you made it to the shelf,are you ready for the next item?");
+                
                 
                 
             }

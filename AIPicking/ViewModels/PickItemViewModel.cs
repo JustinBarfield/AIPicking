@@ -19,7 +19,6 @@ namespace AIPicking.ViewModels
         #region Properties
        
         private PickingItem pickingItem;
-        private string cartID;
         private string recognizedText;
         private string ticketNumber;
         
@@ -65,9 +64,10 @@ namespace AIPicking.ViewModels
             }
         }
 
+        private string cartID;
         public string CartID
         {
-            get => cartID;
+            get { return cartID; }
             set
             {
                 cartID = value;
@@ -147,6 +147,7 @@ namespace AIPicking.ViewModels
 
             PickingItem = new PickingItem
             {
+                CartID = "1234",
                 Quantity = "10",
                 Title = "Sample Item",
                 Location = "Aisle 3, Shelf 2",
@@ -158,8 +159,7 @@ namespace AIPicking.ViewModels
             SkipItemCommand = new RelayCommand(OnSkipItem);
             HomeCommand = new RelayCommand(OnHome);
 
-
-            textToSpeechViewModel.SynthesizeAllInfo(Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
+            textToSpeechViewModel.SynthesizeAllInfo(CartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
         }
 
         
@@ -193,45 +193,31 @@ namespace AIPicking.ViewModels
 
         #endregion
 
-        #region TTS
-        static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
-        {
-            switch (speechSynthesisResult.Reason)
-            {
-                case ResultReason.SynthesizingAudioCompleted:
-                    Console.WriteLine($"Speech synthesized for text: [{text}]");
-                    break;
-                case ResultReason.Canceled:
-                    var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
-                    Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
-
-                    if (cancellation.Reason == CancellationReason.Error)
-                    {
-                        Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-                        Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
-                        Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
-                    }
-                    break;
-            }
-        }
-
-        
-
-        #endregion
-
-        #region STT
-       
-
-        
-
-       
-        #endregion
-       
-
+      
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        public PickItemViewModel(string cartID)
+        {
+            textToSpeechViewModel = new TextToSpeechViewModel();
+
+            PickingItem = new PickingItem
+            {
+                CartID = cartID, // Set the CartID here
+                Quantity = "10",
+                Title = "Sample Item",
+                Location = "Aisle 3, Shelf 2",
+                Description = "This is a sample.",
+                ItemsLeft = "50",
+                SerialNumber = "123"
+            };
+            ConfirmCommand = new RelayCommand(OnConfirm);
+            SkipItemCommand = new RelayCommand(OnSkipItem);
+            HomeCommand = new RelayCommand(OnHome);
+
+            textToSpeechViewModel.SynthesizeAllInfo(cartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
         }
     }
 }

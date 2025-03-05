@@ -59,7 +59,7 @@ namespace AIPicking.ViewModels
             }
         }
 
-        public async Task SynthesizeAllInfo(string Title, string Quantity, string Location, string Description, string ItemsLeft, string SerialNumber)
+        public async Task SynthesizeAllInfo(string CartID, string Title, string Quantity, string Location, string Description, string ItemsLeft, string SerialNumber)
         {
 
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
@@ -67,7 +67,7 @@ namespace AIPicking.ViewModels
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
-                string text = $"Item: {Title}, Quantity: {Quantity}, Location: {Location}, Description: {Description}, Items Left: {ItemsLeft}, Serial Number: {SerialNumber}";
+                string text = $"Item: {Title},Cart ID: {CartID}, Quantity: {Quantity}, Location: {Location}, Description: {Description}, Items Left: {ItemsLeft}, Serial Number: {SerialNumber}";
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }

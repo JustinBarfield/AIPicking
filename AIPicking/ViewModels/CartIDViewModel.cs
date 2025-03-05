@@ -13,24 +13,29 @@ namespace AIPicking.ViewModels
 {
     public class CartIDViewModel : INotifyPropertyChanged
     {
-       
- public CartIDViewModel()
+        private readonly TextToSpeechViewModel textToSpeechViewModel;
+
+        public CartIDViewModel()
         {
             _intentViewModel = new IntentViewModel();
             speechToTextViewModel = new SpeechToTextViewModel();
+            textToSpeechViewModel = new TextToSpeechViewModel();
 
+            SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech("Say the CartID"));
+            AnalyzeCommand = new RelayCommand(async () => await _intentViewModel.AnalyzeConversationAsync(CartID, "en"));
             RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
             {
-                 speechToTextViewModel.RecognizeSpeechFromMic();
-                Console.WriteLine($"Recognized Text: {speechToTextViewModel.RecognizedText}");
+                IsRecording = true;
+                await speechToTextViewModel.RecognizeSpeechFromMic();
                 CartID = speechToTextViewModel.RecognizedText;
-                Console.WriteLine($"CartID set to: {CartID}");
+                IsRecording = false;
             });
 
             ReturnToHomeCommand = new RelayCommand(async () => await ReturnToHome(null, null));
             EnterCommand = new RelayCommand(async () => await OpenPickItemView());
+            SpeakCartID();
         }
-        
+
         #region Properties
         private readonly IntentViewModel _intentViewModel;
         private readonly SpeechToTextViewModel speechToTextViewModel;
@@ -95,13 +100,22 @@ namespace AIPicking.ViewModels
         public ICommand RecognizeSpeechFromMicCommand { get; }
         public ICommand ReturnToHomeCommand { get; }
         public ICommand EnterCommand { get; }
-        public ICommand AnalyzeCommand => _intentViewModel.AnalyzeCommand;
+        public ICommand AnalyzeCommand { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public async Task SpeakCartID()
+        {
+            await textToSpeechViewModel.SynthesizeSpeech("Say the CartID");
+            IsRecording = true;
+            await speechToTextViewModel.RecognizeSpeechFromMic();
+            CartID = speechToTextViewModel.RecognizedText;
+            IsRecording = false;
         }
         #endregion
 
@@ -111,13 +125,8 @@ namespace AIPicking.ViewModels
             var viewModel = new ViewModel();
             var view = new HomePageUC { DataContext = viewModel };
 
-            // Assuming you have a reference to the current window
             var currentWindow = System.Windows.Application.Current.MainWindow;
-
-            // Update the content of the current window
             currentWindow.Content = view;
-
-            // Optionally, you can update the title or other properties of the current window
             currentWindow.Title = "Main Window";
             currentWindow.Width = 400;
             currentWindow.Height = 300;
@@ -125,16 +134,11 @@ namespace AIPicking.ViewModels
 
         public async Task OpenPickItemView()
         {
-            var pickItemViewModel = new PickItemViewModel();
+            var pickItemViewModel = new PickItemViewModel(CartID);
             var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
 
-            // Assuming you have a reference to the current window
             var currentWindow = System.Windows.Application.Current.MainWindow;
-
-            // Update the content of the current window
             currentWindow.Content = pickItemView;
-
-            // Optionally, you can update the title or other properties of the current window
             currentWindow.Title = "Pick Item";
             currentWindow.Width = 400;
             currentWindow.Height = 300;

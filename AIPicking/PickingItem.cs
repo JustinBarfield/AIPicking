@@ -14,5 +14,6 @@ namespace AIPicking
         public string Description { get; set; }
         public string ItemsLeft { get; set; }
         public string SerialNumber { get; set; }
+        public string CartID { get; set; }
     }
 }

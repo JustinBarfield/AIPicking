@@ -39,8 +39,26 @@ namespace AIPicking
                 OnPropertyChanged();
             }
         }
-
-       
+        private bool isRecording;
+        public bool IsRecording
+        {
+            get { return isRecording; }
+            set
+            {
+                isRecording = value;
+                OnPropertyChanged();
+            }
+        }
+        private string recognizedText;
+        public string RecognizedText
+        {
+            get { return recognizedText; }
+            set
+            {
+                recognizedText = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand RecognizeSpeechFromMicCommand { get; }
         public ICommand OpenScanCartIDViewCommand { get; }
         public ICommand OpenPickItemViewCommand { get; }
@@ -59,8 +77,10 @@ namespace AIPicking
             SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech(TextBoxValue));
             RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
             {
+                IsRecording = true;
                 await speechToTextViewModel.RecognizeSpeechFromMic();
-                TextBoxValue = speechToTextViewModel.RecognizedText;
+                RecognizedText = speechToTextViewModel.RecognizedText;
+                isRecording = false;
             });
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
             OpenPickItemViewCommand = new RelayCommand(async () => await OpenPickItemView(null, null));
@@ -85,8 +105,7 @@ namespace AIPicking
 
             // Start the speech synthesis without awaiting it
             // cartIDViewModel.SynthesizeSpeech();
-            await textToSpeechViewModel.SynthesizeSpeech("Say the cart ID");
-            await speechToTextViewModel.RecognizeSpeechFromMic();
+            
         }
 
         public async Task OpenPickItemView(object sender, RoutedEventArgs e)
