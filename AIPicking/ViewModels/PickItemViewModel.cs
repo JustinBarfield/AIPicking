@@ -140,6 +140,7 @@ namespace AIPicking.ViewModels
         public ICommand HomeCommand { get; }
         private readonly SpeechToTextViewModel speechToTextViewModel;
         private readonly TextToSpeechViewModel textToSpeechViewModel;
+        private readonly IntentViewModel _intentViewModel;
         #endregion
         public PickItemViewModel()
         {
@@ -199,10 +200,13 @@ namespace AIPicking.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+       
         public PickItemViewModel(string cartID)
         {
             textToSpeechViewModel = new TextToSpeechViewModel();
-
+            speechToTextViewModel = new SpeechToTextViewModel();
+            _intentViewModel = new IntentViewModel();
+            CartID = cartID;
             PickingItem = new PickingItem
             {
                 CartID = cartID, // Set the CartID here
@@ -217,7 +221,24 @@ namespace AIPicking.ViewModels
             SkipItemCommand = new RelayCommand(OnSkipItem);
             HomeCommand = new RelayCommand(OnHome);
 
-            textToSpeechViewModel.SynthesizeAllInfo(cartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
+            InitializeAsync();
         }
+
+        private async Task InitializeAsync()
+        {
+            //need logic to loop through all items in the cart
+
+            await textToSpeechViewModel.SynthesizeAllInfo(CartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
+            await textToSpeechViewModel.SynthesizeSpeech("are you at the shelf?");
+            IsRecording = true;
+            await speechToTextViewModel.RecognizeSpeechFromMic();
+            RecognizedText = speechToTextViewModel.RecognizedText;
+            IsRecording = false;
+            await _intentViewModel.AnalyzeConversationAsync(RecognizedText, "en");
+
+        }
+           
+
+        
     }
 }

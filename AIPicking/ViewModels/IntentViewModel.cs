@@ -137,8 +137,6 @@ public class IntentViewModel : INotifyPropertyChanged
             {
                 await SynthesizeSpeech("you made it to the shelf,are you ready for the next item?");
                 
-                
-                
             }
         }
 
