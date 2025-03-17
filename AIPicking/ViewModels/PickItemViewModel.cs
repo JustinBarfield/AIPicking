@@ -14,14 +14,13 @@ using static AIPicking.ViewModel;
 
 namespace AIPicking.ViewModels
 {
-    public class PickItemViewModel : INotifyPropertyChanged
+    public class PickItemViewModel : INotifyPropertyChanged, IResponseHandler
     {
         #region Properties
-       
+
         private PickingItem pickingItem;
         private string recognizedText;
         private string ticketNumber;
-        
         private string recognizedLang;
         private bool isRecording;
 
@@ -54,6 +53,7 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public PickingItem PickingItem
         {
             get => pickingItem;
@@ -142,13 +142,21 @@ namespace AIPicking.ViewModels
         private readonly TextToSpeechViewModel textToSpeechViewModel;
         private readonly IntentViewModel _intentViewModel;
         #endregion
+
         public PickItemViewModel()
         {
-            textToSpeechViewModel = new TextToSpeechViewModel();
+        }
 
+        public PickItemViewModel(string cartID)
+        {
+            textToSpeechViewModel = new TextToSpeechViewModel();
+            speechToTextViewModel = new SpeechToTextViewModel();
+            _intentViewModel = new IntentViewModel(this);
+            CartID = cartID;
+            //need to make fake cartID's and items
             PickingItem = new PickingItem
             {
-                CartID = "1234",
+                CartID = cartID, // Set the CartID here
                 Quantity = "10",
                 Title = "Sample Item",
                 Location = "Aisle 3, Shelf 2",
@@ -160,10 +168,66 @@ namespace AIPicking.ViewModels
             SkipItemCommand = new RelayCommand(OnSkipItem);
             HomeCommand = new RelayCommand(OnHome);
 
-            textToSpeechViewModel.SynthesizeAllInfo(CartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
+            InitializeAsync();
         }
 
-        
+        private async Task InitializeAsync()
+        {
+            //need logic to loop through all items in the cart
+
+            await textToSpeechViewModel.SynthesizeAllInfo(CartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
+            await textToSpeechViewModel.SynthesizeSpeech("are you at the shelf?");
+            IsRecording = true;
+            await speechToTextViewModel.RecognizeSpeechFromMic();
+            RecognizedText = speechToTextViewModel.RecognizedText;
+            IsRecording = false;
+            var intent = await _intentViewModel.AnalyzeConversationAsync(RecognizedText, "en");
+
+            // Handle the intent using a switch case statement
+            switch (intent)
+            {
+                case "yes":
+                    await HandleYesResponse();
+                    break;
+                case "No":
+                    await HandleNoResponse();
+                    break;
+                case "Arrived":
+                    await HandleArrivedResponse();
+                    break;
+                case "Picked item":
+                    await HandlePickedItemResponse();
+                    break;
+                default:
+                    await textToSpeechViewModel.SynthesizeSpeech("I didn't understand that. Please try again.");
+                    break;
+            }
+        }
+
+        public async Task HandleYesResponse()
+        {
+            // Implement the logic for handling "yes" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item in PickItemViewModel");
+        }
+
+        public async Task HandleNoResponse()
+        {
+            // Implement the logic for handling "no" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("Please try again in PickItemViewModel");
+        }
+
+        public async Task HandleArrivedResponse()
+        {
+            // Implement the logic for handling "arrived" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("You said you've arrived in PickItemViewModel");
+        }
+
+        public async Task HandlePickedItemResponse()
+        {
+            // Implement the logic for handling "picked item" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item in PickItemViewModel");
+        }
+
         #region Buttons
         private async Task OnConfirm()
         {
@@ -194,51 +258,10 @@ namespace AIPicking.ViewModels
 
         #endregion
 
-      
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-       
-        public PickItemViewModel(string cartID)
-        {
-            textToSpeechViewModel = new TextToSpeechViewModel();
-            speechToTextViewModel = new SpeechToTextViewModel();
-            _intentViewModel = new IntentViewModel();
-            CartID = cartID;
-            PickingItem = new PickingItem
-            {
-                CartID = cartID, // Set the CartID here
-                Quantity = "10",
-                Title = "Sample Item",
-                Location = "Aisle 3, Shelf 2",
-                Description = "This is a sample.",
-                ItemsLeft = "50",
-                SerialNumber = "123"
-            };
-            ConfirmCommand = new RelayCommand(OnConfirm);
-            SkipItemCommand = new RelayCommand(OnSkipItem);
-            HomeCommand = new RelayCommand(OnHome);
-
-            InitializeAsync();
-        }
-
-        private async Task InitializeAsync()
-        {
-            //need logic to loop through all items in the cart
-
-            await textToSpeechViewModel.SynthesizeAllInfo(CartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
-            await textToSpeechViewModel.SynthesizeSpeech("are you at the shelf?");
-            IsRecording = true;
-            await speechToTextViewModel.RecognizeSpeechFromMic();
-            RecognizedText = speechToTextViewModel.RecognizedText;
-            IsRecording = false;
-            await _intentViewModel.AnalyzeConversationAsync(RecognizedText, "en");
-
-        }
-           
-
-        
     }
 }

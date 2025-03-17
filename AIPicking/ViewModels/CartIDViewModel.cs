@@ -144,5 +144,29 @@ namespace AIPicking.ViewModels
             currentWindow.Height = 300;
         }
         #endregion
+
+        public async Task HandleYesResponse()
+        {
+            // Implement the logic for handling "yes" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item in PickItemViewModel");
+        }
+
+        public async Task HandleNoResponse()
+        {
+            // Implement the logic for handling "no" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("Please try again in PickItemViewModel");
+        }
+
+        public async Task HandleArrivedResponse()
+        {
+            // Implement the logic for handling "arrived" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("You said you've arrived in PickItemViewModel");
+        }
+
+        public async Task HandlePickedItemResponse()
+        {
+            // Implement the logic for handling "picked item" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item in PickItemViewModel");
+        }
     }
 }
