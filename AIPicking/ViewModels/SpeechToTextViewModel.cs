@@ -14,11 +14,13 @@ using System.Windows.Input;
 
 namespace AIPicking.ViewModels
 {
-    class SpeechToTextViewModel
+    class SpeechToTextViewModel : INotifyPropertyChanged
     {
-        public SpeechToTextViewModel() {
+        public SpeechToTextViewModel()
+        {
             _intentViewModel = new IntentViewModel();
         }
+
         static string OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
         {
             switch (speechSynthesisResult.Reason)
@@ -42,6 +44,7 @@ namespace AIPicking.ViewModels
                     return "error";
             }
         }
+
         private string recognizedText;
         private string recognizedLang;
         private bool isRecording;
@@ -51,6 +54,7 @@ namespace AIPicking.ViewModels
         private static readonly Uri endpoint = new Uri(languageEndpoint);
         private readonly IntentViewModel _intentViewModel;
         public ICommand AnalyzeCommand => _intentViewModel.AnalyzeCommand;
+
         public bool IsRecording
         {
             get { return isRecording; }
@@ -60,6 +64,7 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public string RecognizedText
         {
             get { return recognizedText; }
@@ -79,6 +84,18 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        private string language = "en-US"; // Default language
+        public string Language
+        {
+            get { return language; }
+            set
+            {
+                language = value;
+                OnPropertyChanged();
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -88,9 +105,11 @@ namespace AIPicking.ViewModels
 
         private static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
         private static string speechRegion = "eastus";
+
         public async Task RecognizeSpeechFromMic()
         {
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+            speechConfig.SpeechRecognitionLanguage = Language; // Set the recognition language
 
             IsRecording = true;
             using (var audioConfig = AudioConfig.FromDefaultMicrophoneInput())
@@ -126,26 +145,6 @@ namespace AIPicking.ViewModels
             }
         }
 
-        private async Task AnalyzeRecognizedSpeech(string recognizedText)
-        {
-            // Set the input text and language
-            _intentViewModel.InputText = recognizedText;
-            _intentViewModel.RegisteredLang = recognizedLang;
-
-            // Execute the AnalyzeCommand
-            if (_intentViewModel.AnalyzeCommand.CanExecute(null))
-            {
-                _intentViewModel.AnalyzeCommand.Execute(null);
-            }
-
-            // Wait for the analysis to complete (assuming AnalyzeCommand is asynchronous)
-            await Task.Delay(1000); // Adjust the delay as needed
-
-            // Retrieve the intent and confidence score
-            var intent = _intentViewModel.Intent;
-            var confidenceScore = _intentViewModel.ConfidenceScore;
-
-
-        }
+        
     }
 }

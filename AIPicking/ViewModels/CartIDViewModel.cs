@@ -23,19 +23,19 @@ namespace AIPicking.ViewModels
 
             SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech("Say the CartID"));
             AnalyzeCommand = new RelayCommand(async () => await _intentViewModel.AnalyzeConversationAsync(CartID, "en"));
-            RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
-            {
-                IsRecording = true;
-                await speechToTextViewModel.RecognizeSpeechFromMic();
-                CartID = speechToTextViewModel.RecognizedText;
-                IsRecording = false;
-            });
-
+           
             ReturnToHomeCommand = new RelayCommand(async () => await ReturnToHome(null, null));
             EnterCommand = new RelayCommand(async () => await OpenPickItemView());
-            SpeakCartID();
+
+           
+            InitializeAsync();
         }
 
+        private async Task InitializeAsync()
+        {
+           //await LanguageDecision();
+           await SpeakCartID();
+        }
         #region Properties
         private readonly IntentViewModel _intentViewModel;
         private readonly SpeechToTextViewModel speechToTextViewModel;
@@ -108,13 +108,23 @@ namespace AIPicking.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
+        public async Task LanguageDecision()
+        {
+            await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
+            IsRecording = true;
+            await speechToTextViewModel.RecognizeSpeechFromMic();
+            
+            RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
+            IsRecording = false;
+        }
         public async Task SpeakCartID()
         {
+            RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
             await textToSpeechViewModel.SynthesizeSpeech("Say the CartID");
             IsRecording = true;
             await speechToTextViewModel.RecognizeSpeechFromMic();
             CartID = speechToTextViewModel.RecognizedText;
+            
             IsRecording = false;
         }
         #endregion
@@ -144,29 +154,5 @@ namespace AIPicking.ViewModels
             currentWindow.Height = 300;
         }
         #endregion
-
-        public async Task HandleYesResponse()
-        {
-            // Implement the logic for handling "yes" response in PickItemViewModel
-            await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item in PickItemViewModel");
-        }
-
-        public async Task HandleNoResponse()
-        {
-            // Implement the logic for handling "no" response in PickItemViewModel
-            await textToSpeechViewModel.SynthesizeSpeech("Please try again in PickItemViewModel");
-        }
-
-        public async Task HandleArrivedResponse()
-        {
-            // Implement the logic for handling "arrived" response in PickItemViewModel
-            await textToSpeechViewModel.SynthesizeSpeech("You said you've arrived in PickItemViewModel");
-        }
-
-        public async Task HandlePickedItemResponse()
-        {
-            // Implement the logic for handling "picked item" response in PickItemViewModel
-            await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item in PickItemViewModel");
-        }
     }
 }

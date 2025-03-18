@@ -28,7 +28,6 @@ namespace AIPicking
             }
         }
 
-       
         private string ticketNumber;
         public string TicketNumber
         {
@@ -63,17 +62,19 @@ namespace AIPicking
         public ICommand OpenScanCartIDViewCommand { get; }
         public ICommand OpenPickItemViewCommand { get; }
         public ICommand SynthesizeSpeechCommand { get; }
+        public ICommand TranslateCommand => translatorViewModel.TranslateCommand;
 
-      
         #endregion
 
-      
         private readonly TextToSpeechViewModel textToSpeechViewModel;
         private readonly SpeechToTextViewModel speechToTextViewModel;
+        private readonly TranslatorViewModel translatorViewModel;
+
         public ViewModel()
         {
             textToSpeechViewModel = new TextToSpeechViewModel();
             speechToTextViewModel = new SpeechToTextViewModel();
+            translatorViewModel = new TranslatorViewModel();
             SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech(TextBoxValue));
             RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
             {
@@ -85,42 +86,27 @@ namespace AIPicking
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
             OpenPickItemViewCommand = new RelayCommand(async () => await OpenPickItemView(null, null));
         }
-       
 
         public async Task OpenScanCartIDView(object sender, RoutedEventArgs e)
         {
             var cartIDViewModel = new CartIDViewModel();
             var cartIDView = new CartID { DataContext = cartIDViewModel };
 
-            // Assuming you have a reference to the current window
             var currentWindow = System.Windows.Application.Current.MainWindow;
-
-            // Update the content of the current window
             currentWindow.Content = cartIDView;
-
-            // Optionally, you can update the title or other properties of the current window
             currentWindow.Title = "Scan Cart ID";
             currentWindow.Width = 400;
             currentWindow.Height = 300;
-
-            // Start the speech synthesis without awaiting it
-            // cartIDViewModel.SynthesizeSpeech();
-            
         }
 
         public async Task OpenPickItemView(object sender, RoutedEventArgs e)
         {
-            var cartIDViewModel = new CartIDViewModel(); // Create an instance of CartIDViewModel
+            var cartIDViewModel = new CartIDViewModel();
             var pickItemViewModel = new PickItemViewModel();
             var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
 
-            // Assuming you have a reference to the current window
             var currentWindow = System.Windows.Application.Current.MainWindow;
-
-            // Update the content of the current window
             currentWindow.Content = pickItemView;
-
-            // Optionally, you can update the title or other properties of the current window
             currentWindow.Title = "Pick Item";
             currentWindow.Width = 400;
             currentWindow.Height = 300;
@@ -132,6 +118,7 @@ namespace AIPicking
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
         public class RelayCommand : ICommand
         {
             private readonly Func<Task> _execute;
