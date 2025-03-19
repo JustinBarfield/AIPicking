@@ -103,7 +103,6 @@ namespace AIPicking
                 isRecording = false;
             });
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
-            OpenPickItemViewCommand = new RelayCommand(async () => await OpenPickItemView(null, null));
         }
         public async Task LanguageDecision()
         {
@@ -127,18 +126,7 @@ namespace AIPicking
             currentWindow.Height = 300;
         }
 
-        public async Task OpenPickItemView(object sender, RoutedEventArgs e)
-        {
-            var cartIDViewModel = new CartIDViewModel();
-            var pickItemViewModel = new PickItemViewModel();
-            var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
-
-            var currentWindow = System.Windows.Application.Current.MainWindow;
-            currentWindow.Content = pickItemView;
-            currentWindow.Title = "Pick Item";
-            currentWindow.Width = 400;
-            currentWindow.Height = 300;
-        }
+       
 
         public event PropertyChangedEventHandler PropertyChanged;
 

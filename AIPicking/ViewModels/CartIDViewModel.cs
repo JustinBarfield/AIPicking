@@ -21,8 +21,8 @@ namespace AIPicking.ViewModels
             speechToTextViewModel = new SpeechToTextViewModel();
             textToSpeechViewModel = new TextToSpeechViewModel();
 
-            SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech("Say the CartID"));
-            AnalyzeCommand = new RelayCommand(async () => await _intentViewModel.AnalyzeConversationAsync(CartID, "en"));
+            //SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech("Say the CartID"));
+            AnalyzeCommand = new RelayCommand(async () => await _intentViewModel.AnalyzeConversationAsync(CartID, RecognizedLang));
            
             ReturnToHomeCommand = new RelayCommand(async () => await ReturnToHome(null, null));
             EnterCommand = new RelayCommand(async () => await OpenPickItemView());
@@ -144,7 +144,7 @@ namespace AIPicking.ViewModels
 
         public async Task OpenPickItemView()
         {
-            var pickItemViewModel = new PickItemViewModel(CartID);
+            var pickItemViewModel = new PickItemViewModel(CartID, recognizedLang);
             var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
 
             var currentWindow = System.Windows.Application.Current.MainWindow;

@@ -171,12 +171,12 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
-        public ICommand ConfirmCommand { get; }
         public ICommand SkipItemCommand { get; }
         public ICommand HomeCommand { get; }
         public ICommand TranslateCommand { get; } // Add TranslateCommand
         private readonly SpeechToTextViewModel speechToTextViewModel;
         private readonly TextToSpeechViewModel textToSpeechViewModel;
+        
         private readonly IntentViewModel _intentViewModel;
 
         // Define the array of PickingItem objects
@@ -188,9 +188,10 @@ namespace AIPicking.ViewModels
         {
         }
 
-        public PickItemViewModel(string cartID)
+        public PickItemViewModel(string cartID, string RecognizedLang)
         {
             textToSpeechViewModel = new TextToSpeechViewModel();
+            
             speechToTextViewModel = new SpeechToTextViewModel();
             _intentViewModel = new IntentViewModel(this);
             translatorViewModel = new TranslatorViewModel(); // Initialize TranslatorViewModel
@@ -204,21 +205,21 @@ namespace AIPicking.ViewModels
                     new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 3", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "0", SerialNumber = "3" },
             };
 
-            ConfirmCommand = new RelayCommand(OnConfirm);
             SkipItemCommand = new RelayCommand(OnSkipItem);
             HomeCommand = new RelayCommand(OnHome);
-            TranslateCommand = new RelayCommand(async () => await TranslateItemAttributes()); // Initialize TranslateCommand
+            TranslateCommand = new RelayCommand(async () => await TranslateItemAttributes(RecognizedLang)); // Initialize TranslateCommand
 
             currentIndex = 0; // Initialize the index
-            InitializeAsync();
+            InitializeAsync(RecognizedLang);
         }
 
-        private async Task InitializeAsync()
+        private async Task InitializeAsync(string RecognizedLang)
         {
             if (currentIndex < PickingItems.Length)
             {
                 var item = PickingItems[currentIndex];
                 PickingItem = item; // Set the PickingItem property
+                await TranslateItemAttributes(RecognizedLang);
                 await textToSpeechViewModel.SynthesizeAllInfo(item.CartID, item.Title, item.Quantity, item.Location, item.Description, item.ItemsLeft, item.SerialNumber);
                 await textToSpeechViewModel.SynthesizeSpeech("are you at the shelf?");
                 IsRecording = true;
@@ -264,14 +265,14 @@ namespace AIPicking.ViewModels
             // Go to the next item
             currentIndex++;
             await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item on the ticket");
-            await InitializeAsync(); // Process the next item
+            await InitializeAsync(RecognizedLang); // Process the next item
         }
 
         public async Task HandleNoResponse()
         {
             // Implement the logic for handling "no" response in PickItemViewModel
             await textToSpeechViewModel.SynthesizeSpeech("Please try again");
-            await InitializeAsync();
+            await InitializeAsync(RecognizedLang);
         }
 
         public async Task HandleArrivedResponse()
@@ -285,20 +286,19 @@ namespace AIPicking.ViewModels
             // Implement the logic for handling "picked item" response in PickItemViewModel
             await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item");
         }
-        public async Task LanguageDecision()
-        {
-            await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
-            IsRecording = true;
-            await speechToTextViewModel.RecognizeSpeechFromMic();
+        //public async Task LanguageDecision()
+        //{
+        //    //await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
+        //    //IsRecording = true;
+        //    //await speechToTextViewModel.RecognizeSpeechFromMic();
 
-            RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
-            IsRecording = false;
-        }
-        private async Task TranslateItemAttributes()
+        //    //RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
+        //    //IsRecording = false;
+        //}
+        private async Task TranslateItemAttributes(string RecognizedLang)
         {
             if (PickingItem != null)
             {
-                await LanguageDecision();
                 if (RecognizedLang == "es")
                 {
                     await translatorViewModel.TranslateTextToSpanish(Title);
@@ -360,7 +360,7 @@ namespace AIPicking.ViewModels
             // Skip the current item and move to the next item
             await textToSpeechViewModel.SynthesizeSpeech("skipping item");
             currentIndex++;
-            await InitializeAsync(); // Process the next item
+            await InitializeAsync(RecognizedLang); // Process the next item
         }
 
         private async Task OnHome()
