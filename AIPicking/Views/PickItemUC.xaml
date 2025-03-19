@@ -34,6 +34,7 @@
                 <Button Content="Confirm" Width="100" Height="30" Margin="5" Command="{Binding ConfirmCommand}"/>
                 <Button Content="Skip Item" Width="100" Height="30" Margin="5" Command="{Binding SkipItemCommand}"/>
                 <Button Content="Home" Width="100" Height="30" Margin="5" Command="{Binding HomeCommand}"/>
+                <Button Content = "Translate" Width = "100" Height = "30" Margin = "5" Command = "{Binding TranslateCommand}" />
             </StackPanel>
         </StackPanel>
     </Grid>

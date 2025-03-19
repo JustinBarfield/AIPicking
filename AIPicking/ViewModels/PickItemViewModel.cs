@@ -24,6 +24,7 @@ namespace AIPicking.ViewModels
         private string recognizedLang;
         private bool isRecording;
         private int currentIndex; // Add an index field
+        private readonly TranslatorViewModel translatorViewModel; // Add TranslatorViewModel
 
         public string RecognizedText
         {
@@ -160,9 +161,20 @@ namespace AIPicking.ViewModels
             }
         }
 
+        
+        public string RecognizedLang
+        {
+            get { return recognizedLang; }
+            set
+            {
+                recognizedLang = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand ConfirmCommand { get; }
         public ICommand SkipItemCommand { get; }
         public ICommand HomeCommand { get; }
+        public ICommand TranslateCommand { get; } // Add TranslateCommand
         private readonly SpeechToTextViewModel speechToTextViewModel;
         private readonly TextToSpeechViewModel textToSpeechViewModel;
         private readonly IntentViewModel _intentViewModel;
@@ -181,19 +193,21 @@ namespace AIPicking.ViewModels
             textToSpeechViewModel = new TextToSpeechViewModel();
             speechToTextViewModel = new SpeechToTextViewModel();
             _intentViewModel = new IntentViewModel(this);
+            translatorViewModel = new TranslatorViewModel(); // Initialize TranslatorViewModel
             CartID = cartID;
 
             // Initialize the array of PickingItem objects
             PickingItems = new PickingItem[]
             {
-                new PickingItem { CartID = cartID, Quantity = "10", Title = "Sample Item 1", Location = "Aisle 3, Shelf 2", Description = "This is a sample.", ItemsLeft = "2", SerialNumber = "1" },
-                new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 2", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "1", SerialNumber = "2" },
-                new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 3", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "0", SerialNumber = "3" },
+                    new PickingItem { CartID = cartID, Quantity = "10", Title = "Sample Item 1", Location = "Aisle 3, Shelf 2", Description = "This is a sample.", ItemsLeft = "2", SerialNumber = "1" },
+                    new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 2", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "1", SerialNumber = "2" },
+                    new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 3", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "0", SerialNumber = "3" },
             };
 
             ConfirmCommand = new RelayCommand(OnConfirm);
             SkipItemCommand = new RelayCommand(OnSkipItem);
             HomeCommand = new RelayCommand(OnHome);
+            TranslateCommand = new RelayCommand(async () => await TranslateItemAttributes()); // Initialize TranslateCommand
 
             currentIndex = 0; // Initialize the index
             InitializeAsync();
@@ -270,6 +284,69 @@ namespace AIPicking.ViewModels
         {
             // Implement the logic for handling "picked item" response in PickItemViewModel
             await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item");
+        }
+        public async Task LanguageDecision()
+        {
+            await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
+            IsRecording = true;
+            await speechToTextViewModel.RecognizeSpeechFromMic();
+
+            RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
+            IsRecording = false;
+        }
+        private async Task TranslateItemAttributes()
+        {
+            if (PickingItem != null)
+            {
+                await LanguageDecision();
+                if (RecognizedLang == "es")
+                {
+                    await translatorViewModel.TranslateTextToSpanish(Title);
+                    Title = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(Description);
+                    Description = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(Location);
+                    Location = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(Quantity);
+                    Quantity = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(ItemsLeft);
+                    ItemsLeft = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(SerialNumber);
+                    SerialNumber = translatorViewModel.TranslationResult;
+                }
+                else
+                {
+                    await translatorViewModel.TranslateTextToEnglish(Title);
+                    Title = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(Description);
+                    Description = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(Location);
+                    Location = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(Quantity);
+                    Quantity = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(ItemsLeft);
+                    ItemsLeft = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(SerialNumber);
+                    SerialNumber = translatorViewModel.TranslationResult;
+                }
+
+                OnPropertyChanged(nameof(Title));
+                OnPropertyChanged(nameof(Description));
+                OnPropertyChanged(nameof(Location));
+                OnPropertyChanged(nameof(Quantity));
+                OnPropertyChanged(nameof(ItemsLeft));
+                OnPropertyChanged(nameof(SerialNumber));
+            }
         }
 
         #region Buttons
