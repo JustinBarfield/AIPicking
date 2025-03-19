@@ -33,7 +33,7 @@ namespace AIPicking.ViewModels
 
         private async Task InitializeAsync()
         {
-           //await LanguageDecision();
+           await LanguageDecision();
            await SpeakCartID();
         }
         #region Properties
@@ -52,7 +52,7 @@ namespace AIPicking.ViewModels
         }
 
         private string recognizedText;
-        private string recognizedLang;
+        
         private bool isRecording;
         private string ticketNumber;
 
@@ -65,7 +65,7 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
-
+        private string recognizedLang;
         public string RecognizedLang
         {
             get { return recognizedLang; }

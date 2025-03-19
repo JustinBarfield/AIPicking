@@ -58,11 +58,21 @@ namespace AIPicking
                 OnPropertyChanged();
             }
         }
+        private string recognizedLang;
+        public string RecognizedLang
+        {
+            get { return recognizedLang; }
+            set
+            {
+                recognizedLang = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand RecognizeSpeechFromMicCommand { get; }
         public ICommand OpenScanCartIDViewCommand { get; }
         public ICommand OpenPickItemViewCommand { get; }
         public ICommand SynthesizeSpeechCommand { get; }
-        public ICommand TranslateCommand => translatorViewModel.TranslateCommand;
+        public ICommand TranslateCommand { get; }
 
         #endregion
 
@@ -76,6 +86,15 @@ namespace AIPicking
             speechToTextViewModel = new SpeechToTextViewModel();
             translatorViewModel = new TranslatorViewModel();
             SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech(TextBoxValue));
+            TranslateCommand = new RelayCommand(async () =>
+            {
+                await LanguageDecision();
+                if (RecognizedLang == "es")
+                    await translatorViewModel.TranslateTextToSpanish(TextBoxValue);
+                else
+                    await translatorViewModel.TranslateTextToEnglish(TextBoxValue);
+                TextBoxValue = translatorViewModel.TranslationResult;
+            });
             RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
             {
                 IsRecording = true;
@@ -85,6 +104,15 @@ namespace AIPicking
             });
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
             OpenPickItemViewCommand = new RelayCommand(async () => await OpenPickItemView(null, null));
+        }
+        public async Task LanguageDecision()
+        {
+            await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
+            IsRecording = true;
+            await speechToTextViewModel.RecognizeSpeechFromMic();
+
+            RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
+            IsRecording = false;
         }
 
         public async Task OpenScanCartIDView(object sender, RoutedEventArgs e)
