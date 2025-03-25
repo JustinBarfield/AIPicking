@@ -14,16 +14,17 @@ using static AIPicking.ViewModel;
 
 namespace AIPicking.ViewModels
 {
-    public class PickItemViewModel : INotifyPropertyChanged
+    public class PickItemViewModel : INotifyPropertyChanged, IResponseHandler
     {
         #region Properties
-       
+
         private PickingItem pickingItem;
         private string recognizedText;
         private string ticketNumber;
-        
         private string recognizedLang;
         private bool isRecording;
+        private int currentIndex; // Add an index field
+        private readonly TranslatorViewModel translatorViewModel; // Add TranslatorViewModel
 
         public string RecognizedText
         {
@@ -54,6 +55,7 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public PickingItem PickingItem
         {
             get => pickingItem;
@@ -61,6 +63,12 @@ namespace AIPicking.ViewModels
             {
                 pickingItem = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(Quantity));
+                OnPropertyChanged(nameof(Title));
+                OnPropertyChanged(nameof(Location));
+                OnPropertyChanged(nameof(Description));
+                OnPropertyChanged(nameof(ItemsLeft));
+                OnPropertyChanged(nameof(SerialNumber));
             }
         }
 
@@ -77,93 +85,270 @@ namespace AIPicking.ViewModels
 
         public string Quantity
         {
-            get => PickingItem.Quantity;
+            get => PickingItem?.Quantity;
             set
             {
-                PickingItem.Quantity = value;
-                OnPropertyChanged();
+                if (PickingItem != null)
+                {
+                    PickingItem.Quantity = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
         public string Title
         {
-            get => PickingItem.Title;
+            get => PickingItem?.Title;
             set
             {
-                PickingItem.Title = value;
-                OnPropertyChanged();
+                if (PickingItem != null)
+                {
+                    PickingItem.Title = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
         public string Location
         {
-            get => PickingItem.Location;
+            get => PickingItem?.Location;
             set
             {
-                PickingItem.Location = value;
-                OnPropertyChanged();
+                if (PickingItem != null)
+                {
+                    PickingItem.Location = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
         public string Description
         {
-            get => PickingItem.Description;
+            get => PickingItem?.Description;
             set
             {
-                PickingItem.Description = value;
-                OnPropertyChanged();
+                if (PickingItem != null)
+                {
+                    PickingItem.Description = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
         public string ItemsLeft
         {
-            get => PickingItem.ItemsLeft;
+            get => PickingItem?.ItemsLeft;
             set
             {
-                PickingItem.ItemsLeft = value;
-                OnPropertyChanged();
+                if (PickingItem != null)
+                {
+                    PickingItem.ItemsLeft = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
         public string SerialNumber
         {
-            get => PickingItem.SerialNumber;
+            get => PickingItem?.SerialNumber;
             set
             {
-                PickingItem.SerialNumber = value;
-                OnPropertyChanged();
+                if (PickingItem != null)
+                {
+                    PickingItem.SerialNumber = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
-        public ICommand ConfirmCommand { get; }
+        
+        public string RecognizedLang
+        {
+            get { return recognizedLang; }
+            set
+            {
+                recognizedLang = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand SkipItemCommand { get; }
         public ICommand HomeCommand { get; }
+        public ICommand TranslateCommand { get; } // Add TranslateCommand
         private readonly SpeechToTextViewModel speechToTextViewModel;
         private readonly TextToSpeechViewModel textToSpeechViewModel;
+        
         private readonly IntentViewModel _intentViewModel;
+
+        // Define the array of PickingItem objects
+        public PickingItem[] PickingItems { get; set; }
+
         #endregion
+
         public PickItemViewModel()
         {
-            textToSpeechViewModel = new TextToSpeechViewModel();
-
-            PickingItem = new PickingItem
-            {
-                CartID = "1234",
-                Quantity = "10",
-                Title = "Sample Item",
-                Location = "Aisle 3, Shelf 2",
-                Description = "This is a sample.",
-                ItemsLeft = "50",
-                SerialNumber = "123"
-            };
-            ConfirmCommand = new RelayCommand(OnConfirm);
-            SkipItemCommand = new RelayCommand(OnSkipItem);
-            HomeCommand = new RelayCommand(OnHome);
-
-            textToSpeechViewModel.SynthesizeAllInfo(CartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
         }
 
-        
+        public PickItemViewModel(string cartID, string RecognizedLang)
+        {
+            textToSpeechViewModel = new TextToSpeechViewModel();
+            
+            speechToTextViewModel = new SpeechToTextViewModel();
+            _intentViewModel = new IntentViewModel(this);
+            translatorViewModel = new TranslatorViewModel(); // Initialize TranslatorViewModel
+            CartID = cartID;
+
+            // Initialize the array of PickingItem objects
+            PickingItems = new PickingItem[]
+            {
+                    new PickingItem { CartID = cartID, Quantity = "10", Title = "Sample Item 1", Location = "Aisle 3, Shelf 2", Description = "This is a sample.", ItemsLeft = "2", SerialNumber = "1" },
+                    new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 2", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "1", SerialNumber = "2" },
+                    new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 3", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "0", SerialNumber = "3" },
+            };
+
+            SkipItemCommand = new RelayCommand(OnSkipItem);
+            HomeCommand = new RelayCommand(OnHome);
+            TranslateCommand = new RelayCommand(async () => await TranslateItemAttributes(RecognizedLang)); // Initialize TranslateCommand
+
+            currentIndex = 0; // Initialize the index
+            InitializeAsync(RecognizedLang);
+        }
+
+        private async Task InitializeAsync(string RecognizedLang)
+        {
+            if (currentIndex < PickingItems.Length)
+            {
+                var item = PickingItems[currentIndex];
+                PickingItem = item; // Set the PickingItem property
+                await TranslateItemAttributes(RecognizedLang);
+                await textToSpeechViewModel.SynthesizeAllInfo(item.CartID, item.Title, item.Quantity, item.Location, item.Description, item.ItemsLeft, item.SerialNumber);
+                await textToSpeechViewModel.SynthesizeSpeech("are you at the shelf?");
+                IsRecording = true;
+                await speechToTextViewModel.RecognizeSpeechFromMic();
+                RecognizedText = speechToTextViewModel.RecognizedText;
+                IsRecording = false;
+                var intent = await _intentViewModel.AnalyzeConversationAsync(RecognizedText, "en");
+
+                // Handle the intent using the new method
+                await HandleIntent(intent);
+            }
+            else
+            {
+                await textToSpeechViewModel.SynthesizeSpeech("All items have been picked.");
+            }
+        }
+
+        private async Task HandleIntent(string intent)
+        {
+            switch (intent)
+            {
+                case "yes":
+                    await HandleYesResponse();
+                    break;
+                case "No":
+                    await HandleNoResponse();
+                    break;
+                case "Arrived":
+                    await HandleArrivedResponse();
+                    break;
+                case "Picked item":
+                    await HandlePickedItemResponse();
+                    break;
+                default:
+                    await textToSpeechViewModel.SynthesizeSpeech("I didn't understand that. Please try again.");
+                    break;
+            }
+        }
+
+        public async Task HandleYesResponse()
+        {
+            // Implement the logic for handling "yes" response in PickItemViewModel
+            // Go to the next item
+            currentIndex++;
+            await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item on the ticket");
+            await InitializeAsync(RecognizedLang); // Process the next item
+        }
+
+        public async Task HandleNoResponse()
+        {
+            // Implement the logic for handling "no" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("Please try again");
+            await InitializeAsync(RecognizedLang);
+        }
+
+        public async Task HandleArrivedResponse()
+        {
+            // Implement the logic for handling "arrived" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("You said you've arrived");
+        }
+
+        public async Task HandlePickedItemResponse()
+        {
+            // Implement the logic for handling "picked item" response in PickItemViewModel
+            await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item");
+        }
+        //public async Task LanguageDecision()
+        //{
+        //    //await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
+        //    //IsRecording = true;
+        //    //await speechToTextViewModel.RecognizeSpeechFromMic();
+
+        //    //RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
+        //    //IsRecording = false;
+        //}
+        private async Task TranslateItemAttributes(string RecognizedLang)
+        {
+            if (PickingItem != null)
+            {
+                if (RecognizedLang == "es")
+                {
+                    await translatorViewModel.TranslateTextToSpanish(Title);
+                    Title = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(Description);
+                    Description = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(Location);
+                    Location = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(Quantity);
+                    Quantity = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(ItemsLeft);
+                    ItemsLeft = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToSpanish(SerialNumber);
+                    SerialNumber = translatorViewModel.TranslationResult;
+                }
+                else
+                {
+                    await translatorViewModel.TranslateTextToEnglish(Title);
+                    Title = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(Description);
+                    Description = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(Location);
+                    Location = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(Quantity);
+                    Quantity = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(ItemsLeft);
+                    ItemsLeft = translatorViewModel.TranslationResult;
+
+                    await translatorViewModel.TranslateTextToEnglish(SerialNumber);
+                    SerialNumber = translatorViewModel.TranslationResult;
+                }
+
+                OnPropertyChanged(nameof(Title));
+                OnPropertyChanged(nameof(Description));
+                OnPropertyChanged(nameof(Location));
+                OnPropertyChanged(nameof(Quantity));
+                OnPropertyChanged(nameof(ItemsLeft));
+                OnPropertyChanged(nameof(SerialNumber));
+            }
+        }
+
         #region Buttons
         private async Task OnConfirm()
         {
@@ -172,7 +357,10 @@ namespace AIPicking.ViewModels
 
         private async Task OnSkipItem()
         {
-            // Implement the logic for the Skip Item button
+            // Skip the current item and move to the next item
+            await textToSpeechViewModel.SynthesizeSpeech("skipping item");
+            currentIndex++;
+            await InitializeAsync(RecognizedLang); // Process the next item
         }
 
         private async Task OnHome()
@@ -194,51 +382,10 @@ namespace AIPicking.ViewModels
 
         #endregion
 
-      
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-       
-        public PickItemViewModel(string cartID)
-        {
-            textToSpeechViewModel = new TextToSpeechViewModel();
-            speechToTextViewModel = new SpeechToTextViewModel();
-            _intentViewModel = new IntentViewModel();
-            CartID = cartID;
-            PickingItem = new PickingItem
-            {
-                CartID = cartID, // Set the CartID here
-                Quantity = "10",
-                Title = "Sample Item",
-                Location = "Aisle 3, Shelf 2",
-                Description = "This is a sample.",
-                ItemsLeft = "50",
-                SerialNumber = "123"
-            };
-            ConfirmCommand = new RelayCommand(OnConfirm);
-            SkipItemCommand = new RelayCommand(OnSkipItem);
-            HomeCommand = new RelayCommand(OnHome);
-
-            InitializeAsync();
-        }
-
-        private async Task InitializeAsync()
-        {
-            //need logic to loop through all items in the cart
-
-            await textToSpeechViewModel.SynthesizeAllInfo(CartID, Quantity, Title, Location, Description, ItemsLeft, SerialNumber);
-            await textToSpeechViewModel.SynthesizeSpeech("are you at the shelf?");
-            IsRecording = true;
-            await speechToTextViewModel.RecognizeSpeechFromMic();
-            RecognizedText = speechToTextViewModel.RecognizedText;
-            IsRecording = false;
-            await _intentViewModel.AnalyzeConversationAsync(RecognizedText, "en");
-
-        }
-           
-
-        
     }
 }

@@ -21,21 +21,21 @@ namespace AIPicking.ViewModels
             speechToTextViewModel = new SpeechToTextViewModel();
             textToSpeechViewModel = new TextToSpeechViewModel();
 
-            SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech("Say the CartID"));
-            AnalyzeCommand = new RelayCommand(async () => await _intentViewModel.AnalyzeConversationAsync(CartID, "en"));
-            RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
-            {
-                IsRecording = true;
-                await speechToTextViewModel.RecognizeSpeechFromMic();
-                CartID = speechToTextViewModel.RecognizedText;
-                IsRecording = false;
-            });
-
+            //SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech("Say the CartID"));
+            AnalyzeCommand = new RelayCommand(async () => await _intentViewModel.AnalyzeConversationAsync(CartID, RecognizedLang));
+           
             ReturnToHomeCommand = new RelayCommand(async () => await ReturnToHome(null, null));
             EnterCommand = new RelayCommand(async () => await OpenPickItemView());
-            SpeakCartID();
+
+           
+            InitializeAsync();
         }
 
+        private async Task InitializeAsync()
+        {
+           await LanguageDecision();
+           await SpeakCartID();
+        }
         #region Properties
         private readonly IntentViewModel _intentViewModel;
         private readonly SpeechToTextViewModel speechToTextViewModel;
@@ -52,7 +52,7 @@ namespace AIPicking.ViewModels
         }
 
         private string recognizedText;
-        private string recognizedLang;
+        
         private bool isRecording;
         private string ticketNumber;
 
@@ -65,7 +65,7 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
-
+        private string recognizedLang;
         public string RecognizedLang
         {
             get { return recognizedLang; }
@@ -108,13 +108,23 @@ namespace AIPicking.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
+        public async Task LanguageDecision()
+        {
+            await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
+            IsRecording = true;
+            await speechToTextViewModel.RecognizeSpeechFromMic();
+            
+            RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
+            IsRecording = false;
+        }
         public async Task SpeakCartID()
         {
+            RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
             await textToSpeechViewModel.SynthesizeSpeech("Say the CartID");
             IsRecording = true;
             await speechToTextViewModel.RecognizeSpeechFromMic();
             CartID = speechToTextViewModel.RecognizedText;
+            
             IsRecording = false;
         }
         #endregion
@@ -134,7 +144,7 @@ namespace AIPicking.ViewModels
 
         public async Task OpenPickItemView()
         {
-            var pickItemViewModel = new PickItemViewModel(CartID);
+            var pickItemViewModel = new PickItemViewModel(CartID, recognizedLang);
             var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
 
             var currentWindow = System.Windows.Application.Current.MainWindow;

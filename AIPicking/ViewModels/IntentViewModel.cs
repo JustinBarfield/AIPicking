@@ -66,21 +66,22 @@ public class IntentViewModel : INotifyPropertyChanged
         }
     }
 
-   
-
     public ICommand AnalyzeCommand { get; }
     public ICommand SynthesizeSpeechCommand { get; }
-    // Add a private field for PickItemViewModel
-    private PickItemViewModel pickItemViewModel;
+    private IResponseHandler responseHandler;
     #endregion
+
+    public IntentViewModel(IResponseHandler responseHandler)
+    {
+        client = new ConversationAnalysisClient(endpoint, credential);
+        this.responseHandler = responseHandler;
+    }
     public IntentViewModel()
     {
         client = new ConversationAnalysisClient(endpoint, credential);
-        //AnalyzeCommand = new RelayCommand(async () => await AnalyzeConversationAsync());
-        //pickItemViewModel = new PickItemViewModel();
     }
 
-    public async Task AnalyzeConversationAsync(string InputText,string RegisteredLang)
+    public async Task<string> AnalyzeConversationAsync(string InputText, string RegisteredLang)
     {
         string projectName = "ConversationalUnderstanding";
         string deploymentName = "PickingAI";
@@ -132,12 +133,6 @@ public class IntentViewModel : INotifyPropertyChanged
             Console.WriteLine($"Category: {category}");
             Console.WriteLine($"Confidence: {confidence}");
             Console.WriteLine();
-
-            if (category == "Arrived at shelf" && confidence > 0.75f)
-            {
-                await SynthesizeSpeech("you made it to the shelf,are you ready for the next item?");
-                
-            }
         }
 
         Console.WriteLine("Entities:");
@@ -164,6 +159,30 @@ public class IntentViewModel : INotifyPropertyChanged
                 }
             }
         }
+
+        // If text includes "no", then category is "No"
+        if (InputText.IndexOf("no", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            Intent = "No";
+        }
+
+        switch (Intent)
+        {
+            case "No":
+                await responseHandler.HandleNoResponse();
+                break;
+            case "Yes":
+                await responseHandler.HandleYesResponse();
+                break;
+            case "Arrived":
+                await responseHandler.HandleArrivedResponse();
+                break;
+            case "Picked item":
+                await responseHandler.HandlePickedItemResponse();
+                break;
+        }
+
+        return Intent;
     }
 
     public async Task SynthesizeSpeech(string text)
@@ -173,7 +192,6 @@ public class IntentViewModel : INotifyPropertyChanged
 
         using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
         {
-            
             var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
             OutputSpeechSynthesisResult(speechSynthesisResult, text);
         }
@@ -205,4 +223,12 @@ public class IntentViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+}
+
+public interface IResponseHandler
+{
+    Task HandleYesResponse();
+    Task HandleNoResponse();
+    Task HandleArrivedResponse();
+    Task HandlePickedItemResponse();
 }

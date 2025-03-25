@@ -28,7 +28,6 @@ namespace AIPicking
             }
         }
 
-       
         private string ticketNumber;
         public string TicketNumber
         {
@@ -59,22 +58,43 @@ namespace AIPicking
                 OnPropertyChanged();
             }
         }
+        private string recognizedLang;
+        public string RecognizedLang
+        {
+            get { return recognizedLang; }
+            set
+            {
+                recognizedLang = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand RecognizeSpeechFromMicCommand { get; }
         public ICommand OpenScanCartIDViewCommand { get; }
         public ICommand OpenPickItemViewCommand { get; }
         public ICommand SynthesizeSpeechCommand { get; }
+        public ICommand TranslateCommand { get; }
 
-      
         #endregion
 
-      
         private readonly TextToSpeechViewModel textToSpeechViewModel;
         private readonly SpeechToTextViewModel speechToTextViewModel;
+        private readonly TranslatorViewModel translatorViewModel;
+
         public ViewModel()
         {
             textToSpeechViewModel = new TextToSpeechViewModel();
             speechToTextViewModel = new SpeechToTextViewModel();
+            translatorViewModel = new TranslatorViewModel();
             SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech(TextBoxValue));
+            TranslateCommand = new RelayCommand(async () =>
+            {
+                await LanguageDecision();
+                if (RecognizedLang == "es")
+                    await translatorViewModel.TranslateTextToSpanish(TextBoxValue);
+                else
+                    await translatorViewModel.TranslateTextToEnglish(TextBoxValue);
+                TextBoxValue = translatorViewModel.TranslationResult;
+            });
             RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
             {
                 IsRecording = true;
@@ -83,48 +103,30 @@ namespace AIPicking
                 isRecording = false;
             });
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
-            OpenPickItemViewCommand = new RelayCommand(async () => await OpenPickItemView(null, null));
         }
-       
+        public async Task LanguageDecision()
+        {
+            await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
+            IsRecording = true;
+            await speechToTextViewModel.RecognizeSpeechFromMic();
+
+            RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
+            IsRecording = false;
+        }
 
         public async Task OpenScanCartIDView(object sender, RoutedEventArgs e)
         {
             var cartIDViewModel = new CartIDViewModel();
             var cartIDView = new CartID { DataContext = cartIDViewModel };
 
-            // Assuming you have a reference to the current window
             var currentWindow = System.Windows.Application.Current.MainWindow;
-
-            // Update the content of the current window
             currentWindow.Content = cartIDView;
-
-            // Optionally, you can update the title or other properties of the current window
             currentWindow.Title = "Scan Cart ID";
             currentWindow.Width = 400;
             currentWindow.Height = 300;
-
-            // Start the speech synthesis without awaiting it
-            // cartIDViewModel.SynthesizeSpeech();
-            
         }
 
-        public async Task OpenPickItemView(object sender, RoutedEventArgs e)
-        {
-            var cartIDViewModel = new CartIDViewModel(); // Create an instance of CartIDViewModel
-            var pickItemViewModel = new PickItemViewModel();
-            var pickItemView = new PickItemUC { DataContext = pickItemViewModel };
-
-            // Assuming you have a reference to the current window
-            var currentWindow = System.Windows.Application.Current.MainWindow;
-
-            // Update the content of the current window
-            currentWindow.Content = pickItemView;
-
-            // Optionally, you can update the title or other properties of the current window
-            currentWindow.Title = "Pick Item";
-            currentWindow.Width = 400;
-            currentWindow.Height = 300;
-        }
+       
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -132,6 +134,7 @@ namespace AIPicking
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
         public class RelayCommand : ICommand
         {
             private readonly Func<Task> _execute;
