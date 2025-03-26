@@ -24,7 +24,6 @@ namespace AIPicking.Views
         public CartID()
         {
             InitializeComponent();
-            this.DataContext = new CartIDViewModel();
         }
     }
 }
