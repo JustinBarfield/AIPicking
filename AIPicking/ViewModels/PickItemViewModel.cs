@@ -221,7 +221,6 @@ namespace AIPicking.ViewModels
                 PickingItem = item; // Set the PickingItem property
                 await TranslateItemAttributes(RecognizedLang);
                 await textToSpeechViewModel.SynthesizeAllInfo(item.CartID, item.Title, item.Quantity, item.Location, item.Description, item.ItemsLeft, item.SerialNumber);
-                await textToSpeechViewModel.SynthesizeSpeech("are you at the shelf?");
                 IsRecording = true;
                 await speechToTextViewModel.RecognizeSpeechFromMic();
                 RecognizedText = speechToTextViewModel.RecognizedText;
@@ -248,10 +247,10 @@ namespace AIPicking.ViewModels
                     await HandleNoResponse();
                     break;
                 case "Arrived":
-                    await HandleArrivedResponse();
+                    await HandleYesResponse();
                     break;
                 case "Picked item":
-                    await HandlePickedItemResponse();
+                    await HandleYesResponse();
                     break;
                 default:
                     await textToSpeechViewModel.SynthesizeSpeech("I didn't understand that. Please try again.");
@@ -286,15 +285,7 @@ namespace AIPicking.ViewModels
             // Implement the logic for handling "picked item" response in PickItemViewModel
             await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item");
         }
-        //public async Task LanguageDecision()
-        //{
-        //    //await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
-        //    //IsRecording = true;
-        //    //await speechToTextViewModel.RecognizeSpeechFromMic();
-
-        //    //RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
-        //    //IsRecording = false;
-        //}
+       
         private async Task TranslateItemAttributes(string RecognizedLang)
         {
             if (PickingItem != null)

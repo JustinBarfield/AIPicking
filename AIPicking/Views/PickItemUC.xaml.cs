@@ -24,7 +24,7 @@ namespace AIPicking.Views
         public PickItemUC()
         {
             InitializeComponent();
-            this.DataContext = new PickItemViewModel();
+            
         }
     }
 }
