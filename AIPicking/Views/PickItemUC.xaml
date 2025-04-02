@@ -7,7 +7,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="400">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="400">
             
             <TextBlock Text="Cart ID" FontSize="16" Margin="0,0,0,5"/>
             <TextBox Text="{Binding CartID, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" Margin="0,0,0,10"/>
@@ -34,6 +35,7 @@
                 <Button Content="Skip Item" Width="100" Height="30" Margin="5" Command="{Binding SkipItemCommand}"/>
                 <Button Content="Home" Width="100" Height="30" Margin="5" Command="{Binding HomeCommand}"/>
                 </StackPanel>
-        </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>
