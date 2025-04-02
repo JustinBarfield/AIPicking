@@ -150,8 +150,8 @@ namespace AIPicking.ViewModels
             var currentWindow = System.Windows.Application.Current.MainWindow;
             currentWindow.Content = pickItemView;
             currentWindow.Title = "Pick Item";
-            currentWindow.Width = 400;
-            currentWindow.Height = 300;
+            currentWindow.Width = 500;
+            currentWindow.Height = 800;
         }
         #endregion
     }

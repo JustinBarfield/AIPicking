@@ -161,7 +161,6 @@ namespace AIPicking.ViewModels
             }
         }
 
-        
         public string RecognizedLang
         {
             get { return recognizedLang; }
@@ -176,11 +175,11 @@ namespace AIPicking.ViewModels
         public ICommand TranslateCommand { get; } // Add TranslateCommand
         private readonly SpeechToTextViewModel speechToTextViewModel;
         private readonly TextToSpeechViewModel textToSpeechViewModel;
-        
+
         private readonly IntentViewModel _intentViewModel;
 
-        // Define the array of PickingItem objects
-        public PickingItem[] PickingItems { get; set; }
+        // Define the array of Cart objects
+        public Cart[] Carts { get; set; }
 
         #endregion
 
@@ -191,18 +190,37 @@ namespace AIPicking.ViewModels
         public PickItemViewModel(string cartID, string RecognizedLang)
         {
             textToSpeechViewModel = new TextToSpeechViewModel();
-            
+
             speechToTextViewModel = new SpeechToTextViewModel();
             _intentViewModel = new IntentViewModel(this);
             translatorViewModel = new TranslatorViewModel(); // Initialize TranslatorViewModel
             CartID = cartID;
 
-            // Initialize the array of PickingItem objects
-            PickingItems = new PickingItem[]
+            // Initialize the array of Cart objects
+            Carts = new Cart[]
             {
-                    new PickingItem { CartID = cartID, Quantity = "10", Title = "Sample Item 1", Location = "Aisle 3, Shelf 2", Description = "This is a sample.", ItemsLeft = "2", SerialNumber = "1" },
-                    new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 2", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "1", SerialNumber = "2" },
-                    new PickingItem { CartID = cartID, Quantity = "5", Title = "Sample Item 3", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "0", SerialNumber = "3" },
+                    new Cart("1")
+                    {
+                        Items = new List<PickingItem>
+                        {
+                            new PickingItem { CartID = "1", Quantity = "10", Title = "Sample Item 1", Location = "Aisle 3, Shelf 2", Description = "This is a sample.", ItemsLeft = "2", SerialNumber = "1" },
+                            new PickingItem { CartID = "1", Quantity = "5", Title = "Sample Item 2", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "1", SerialNumber = "2" }
+                        }
+                    },
+                    new Cart("2")
+                    {
+                        Items = new List<PickingItem>
+                        {
+                            new PickingItem { CartID = "2", Quantity = "5", Title = "Sample Item 3", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "0", SerialNumber = "3" }
+                        }
+                    },
+                    new Cart("3")
+                    {
+                        Items = new List<PickingItem>
+                        {
+                            new PickingItem { CartID = "3", Quantity = "8", Title = "Sample Item 4", Location = "Aisle 5, Shelf 3", Description = "This is yet another sample.", ItemsLeft = "3", SerialNumber = "4" }
+                        }
+                    }
             };
 
             SkipItemCommand = new RelayCommand(OnSkipItem);
@@ -215,12 +233,16 @@ namespace AIPicking.ViewModels
 
         private async Task InitializeAsync(string RecognizedLang)
         {
-            if (currentIndex < PickingItems.Length)
+            if (CartID.EndsWith(".") == true)
+                CartID = CartID.Substring(0, CartID.Length - 1);
+
+            var cart = Carts.FirstOrDefault(c => c.CartID == CartID);
+
+            if (cart != null && currentIndex < cart.Items.Count)
             {
-                var item = PickingItems[currentIndex];
-                PickingItem = item; // Set the PickingItem property
+                PickingItem = cart.Items[currentIndex]; // Set the PickingItem property to the current item in the cart
                 await TranslateItemAttributes(RecognizedLang);
-                await textToSpeechViewModel.SynthesizeAllInfo(item.CartID, item.Title, item.Quantity, item.Location, item.Description, item.ItemsLeft, item.SerialNumber);
+                await textToSpeechViewModel.SynthesizeAllInfo(PickingItem.CartID, PickingItem.Title, PickingItem.Quantity, PickingItem.Location, PickingItem.Description, PickingItem.ItemsLeft, PickingItem.SerialNumber);
                 IsRecording = true;
                 await speechToTextViewModel.RecognizeSpeechFromMic();
                 RecognizedText = speechToTextViewModel.RecognizedText;
@@ -262,9 +284,17 @@ namespace AIPicking.ViewModels
         {
             // Implement the logic for handling "yes" response in PickItemViewModel
             // Go to the next item
-            currentIndex++;
-            await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item on the ticket");
-            await InitializeAsync(RecognizedLang); // Process the next item
+            var cart = Carts.FirstOrDefault(c => c.CartID == CartID);
+            if (cart != null)
+            {
+                cart.Items.RemoveAt(currentIndex); // Remove the picked item
+                if (currentIndex >= cart.Items.Count)
+                {
+                    currentIndex = 0; // Reset the index if it exceeds the number of items
+                }
+                await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item on the ticket");
+                await InitializeAsync(RecognizedLang); // Process the next item
+            }
         }
 
         public async Task HandleNoResponse()
@@ -285,7 +315,7 @@ namespace AIPicking.ViewModels
             // Implement the logic for handling "picked item" response in PickItemViewModel
             await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item");
         }
-       
+
         private async Task TranslateItemAttributes(string RecognizedLang)
         {
             if (PickingItem != null)
@@ -350,8 +380,16 @@ namespace AIPicking.ViewModels
         {
             // Skip the current item and move to the next item
             await textToSpeechViewModel.SynthesizeSpeech("skipping item");
-            currentIndex++;
-            await InitializeAsync(RecognizedLang); // Process the next item
+            var cart = Carts.FirstOrDefault(c => c.CartID == CartID);
+            if (cart != null)
+            {
+                cart.Items.RemoveAt(currentIndex); // Remove the skipped item
+                if (currentIndex >= cart.Items.Count)
+                {
+                    currentIndex = 0; // Reset the index if it exceeds the number of items
+                }
+                await InitializeAsync(RecognizedLang); // Process the next item
+            }
         }
 
         private async Task OnHome()
@@ -377,6 +415,17 @@ namespace AIPicking.ViewModels
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+    public class Cart
+    {
+        public string CartID { get; set; }
+        public List<PickingItem> Items { get; set; }
+
+        public Cart(string cartID)
+        {
+            CartID = cartID;
+            Items = new List<PickingItem>();
         }
     }
 }

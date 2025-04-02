@@ -15,13 +15,12 @@ namespace AIPicking.ViewModels
     {
         private static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
         private static string speechRegion = "eastus";
-        
 
         public ICommand SynthesizeSpeechCommand { get; }
 
         public TextToSpeechViewModel()
         {
-            
+
         }
 
         public async Task SynthesizeSpeech(string text)
@@ -31,13 +30,11 @@ namespace AIPicking.ViewModels
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
-                
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
-
-                
             }
         }
+
         static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
         {
             switch (speechSynthesisResult.Reason)
@@ -61,27 +58,22 @@ namespace AIPicking.ViewModels
 
         public async Task SynthesizeAllInfo(string CartID, string Title, string Quantity, string Location, string Description, string ItemsLeft, string SerialNumber)
         {
-
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
             speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
-                string text = $"Item: {Title},Cart ID: {CartID}, Quantity: {Quantity}, Location: {Location}, Description: {Description}, Items Left: {ItemsLeft}, Serial Number: {SerialNumber}";
+                string text = $"Item: {Title}, Cart ID: {CartID}, Quantity: {Quantity}, Location: {Location}, Description: {Description}, Items Left: {ItemsLeft}, Serial Number: {SerialNumber}";
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }
 
             // Ask if the user is at the shelf
             await AskIfAtShelf();
-
         }
-
-
 
         private async Task AskIfAtShelf()
         {
-
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
             speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
 
@@ -91,9 +83,6 @@ namespace AIPicking.ViewModels
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }
-
-            
-
         }
     }
 }
