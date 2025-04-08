@@ -16,6 +16,9 @@ namespace AIPicking
     public class ViewModel : INotifyPropertyChanged
     {
         #region Properties
+        private readonly TextToSpeechViewModel textToSpeechViewModel;
+        private readonly SpeechToTextViewModel speechToTextViewModel;
+        private readonly TranslatorViewModel translatorViewModel;
         private string textBoxValue;
 
         public string TextBoxValue
@@ -76,10 +79,6 @@ namespace AIPicking
 
         #endregion
 
-        private readonly TextToSpeechViewModel textToSpeechViewModel;
-        private readonly SpeechToTextViewModel speechToTextViewModel;
-        private readonly TranslatorViewModel translatorViewModel;
-
         public ViewModel()
         {
             textToSpeechViewModel = new TextToSpeechViewModel();
@@ -104,6 +103,7 @@ namespace AIPicking
             });
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
         }
+        #region Tasks
         public async Task LanguageDecision()
         {
             await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
@@ -126,7 +126,8 @@ namespace AIPicking
             currentWindow.Height = 600;
         }
 
-       
+        #endregion
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 

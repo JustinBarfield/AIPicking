@@ -15,6 +15,7 @@ namespace AIPicking.ViewModels
 {
     public class TranslatorViewModel : INotifyPropertyChanged
     {
+        #region Properties
         private static readonly string key = "C4qX7N4RWfunc96zUkwaTsbDncjs2quphetSWNE7KAGkhObiXqvLJQQJ99BCACYeBjFXJ3w3AAAbACOGjFWj";
         private static readonly string endpoint = "https://api.cognitive.microsofttranslator.com";
         private static readonly string location = "eastus";
@@ -29,6 +30,22 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
+        // Define classes to match the JSON structure
+        public class TranslationResponse
+        {
+            [JsonProperty("translations")]
+            public List<Translation> Translations { get; set; }
+        }
+
+        public class Translation
+        {
+            [JsonProperty("text")]
+            public string Text { get; set; }
+
+            [JsonProperty("to")]
+            public string To { get; set; }
+        }
+        #endregion
 
         public TranslatorViewModel()
         {
@@ -96,20 +113,6 @@ namespace AIPicking.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        // Define classes to match the JSON structure
-        public class TranslationResponse
-        {
-            [JsonProperty("translations")]
-            public List<Translation> Translations { get; set; }
-        }
-
-        public class Translation
-        {
-            [JsonProperty("text")]
-            public string Text { get; set; }
-
-            [JsonProperty("to")]
-            public string To { get; set; }
-        }
+       
     }
 }

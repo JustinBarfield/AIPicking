@@ -80,7 +80,7 @@ public class IntentViewModel : INotifyPropertyChanged
     {
         client = new ConversationAnalysisClient(endpoint, credential);
     }
-
+    #region Tasks
     public async Task<string> AnalyzeConversationAsync(string InputText, string RegisteredLang)
     {
         string projectName = "ConversationalUnderstanding";
@@ -196,7 +196,7 @@ public class IntentViewModel : INotifyPropertyChanged
             OutputSpeechSynthesisResult(speechSynthesisResult, text);
         }
     }
-
+#endregion
     static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
     {
         switch (speechSynthesisResult.Reason)

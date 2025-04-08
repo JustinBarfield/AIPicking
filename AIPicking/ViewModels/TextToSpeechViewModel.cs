@@ -23,18 +23,6 @@ namespace AIPicking.ViewModels
 
         }
 
-        public async Task SynthesizeSpeech(string text)
-        {
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-            using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
-            {
-                var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
-                OutputSpeechSynthesisResult(speechSynthesisResult, text);
-            }
-        }
-
         static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
         {
             switch (speechSynthesisResult.Reason)
@@ -56,6 +44,18 @@ namespace AIPicking.ViewModels
             }
         }
 
+        #region Tasks
+        public async Task SynthesizeSpeech(string text)
+        {
+            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+
+            using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
+            {
+                var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
+                OutputSpeechSynthesisResult(speechSynthesisResult, text);
+            }
+        }
         public async Task SynthesizeAllInfo(string CartID, string Title, string Quantity, string Location, string Description, string ItemsLeft, string SerialNumber)
         {
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
@@ -84,5 +84,6 @@ namespace AIPicking.ViewModels
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }
         }
+        #endregion
     }
 }

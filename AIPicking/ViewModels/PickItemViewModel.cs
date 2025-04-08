@@ -180,6 +180,17 @@ namespace AIPicking.ViewModels
 
         // Define the array of Cart objects
         public Cart[] Carts { get; set; }
+        public class Cart
+        {
+            public string CartID { get; set; }
+            public List<PickingItem> Items { get; set; }
+
+            public Cart(string cartID)
+            {
+                CartID = cartID;
+                Items = new List<PickingItem>();
+            }
+        }
 
         #endregion
 
@@ -230,7 +241,7 @@ namespace AIPicking.ViewModels
             currentIndex = 0; // Initialize the index
             InitializeAsync(RecognizedLang);
         }
-
+        #region Tasks
         private async Task InitializeAsync(string RecognizedLang)
         {
             if (CartID.EndsWith(".") == true)
@@ -369,12 +380,10 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged(nameof(SerialNumber));
             }
         }
+        #endregion
 
         #region Buttons
-        private async Task OnConfirm()
-        {
-            // Implement the logic for the Confirm button
-        }
+
 
         private async Task OnSkipItem()
         {
@@ -417,15 +426,5 @@ namespace AIPicking.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-    public class Cart
-    {
-        public string CartID { get; set; }
-        public List<PickingItem> Items { get; set; }
-
-        public Cart(string cartID)
-        {
-            CartID = cartID;
-            Items = new List<PickingItem>();
-        }
-    }
+   
 }

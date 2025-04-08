@@ -21,7 +21,6 @@ namespace AIPicking.ViewModels
             speechToTextViewModel = new SpeechToTextViewModel();
             textToSpeechViewModel = new TextToSpeechViewModel();
 
-            //SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech("Say the CartID"));
             AnalyzeCommand = new RelayCommand(async () => await _intentViewModel.AnalyzeConversationAsync(CartID, RecognizedLang));
            
             ReturnToHomeCommand = new RelayCommand(async () => await ReturnToHome(null, null));
@@ -31,11 +30,7 @@ namespace AIPicking.ViewModels
             InitializeAsync();
         }
 
-        private async Task InitializeAsync()
-        {
-           await LanguageDecision();
-           await SpeakCartID();
-        }
+       
         #region Properties
         private readonly IntentViewModel _intentViewModel;
         private readonly SpeechToTextViewModel speechToTextViewModel;
@@ -129,7 +124,12 @@ namespace AIPicking.ViewModels
         }
         #endregion
 
-        #region Pages
+        #region Tasks
+        private async Task InitializeAsync()
+        {
+            await LanguageDecision();
+            await SpeakCartID();
+        }
         public async Task ReturnToHome(object sender, RoutedEventArgs e)
         {
             var viewModel = new ViewModel();

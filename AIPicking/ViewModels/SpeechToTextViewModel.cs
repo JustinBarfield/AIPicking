@@ -45,6 +45,7 @@ namespace AIPicking.ViewModels
             }
         }
 
+        #region Properties
         private string recognizedText;
         private string recognizedLang;
         private bool isRecording;
@@ -105,7 +106,7 @@ namespace AIPicking.ViewModels
 
         private static string speechKey = "8xzDB1l9OOZGb5CLKHjS82qhnAPeVV31yKZqDAyTmde0A98lbYcRJQQJ99BBACYeBjFXJ3w3AAAYACOGlizV";
         private static string speechRegion = "eastus";
-
+        #endregion
         public async Task RecognizeSpeechFromMic()
         {
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
