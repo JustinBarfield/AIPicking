@@ -19,14 +19,25 @@ namespace AIPicking
         private readonly TextToSpeechViewModel textToSpeechViewModel;
         private readonly SpeechToTextViewModel speechToTextViewModel;
         private readonly TranslatorViewModel translatorViewModel;
-        private string textBoxValue;
 
+        private string textBoxValue;
+        
         public string TextBoxValue
         {
             get { return textBoxValue; }
             set
             {
                 textBoxValue = value;
+                OnPropertyChanged();
+            }
+        }
+        private string enterCartIDValue;
+        public string EnterCartIDValue
+        {
+            get { return enterCartIDValue; }
+            set
+            {
+                enterCartIDValue = value;
                 OnPropertyChanged();
             }
         }
@@ -81,6 +92,7 @@ namespace AIPicking
 
         public ViewModel()
         {
+            EnterCartIDValue = "Scan Cart ID";
             textToSpeechViewModel = new TextToSpeechViewModel();
             speechToTextViewModel = new SpeechToTextViewModel();
             translatorViewModel = new TranslatorViewModel();
@@ -102,21 +114,31 @@ namespace AIPicking
                 isRecording = false;
             });
             OpenScanCartIDViewCommand = new RelayCommand(async () => await OpenScanCartIDView(null, null));
+            InitializeAsync();
         }
+        private async Task InitializeAsync()
+        {
+            await LanguageDecision();
+        }
+
         #region Tasks
+
         public async Task LanguageDecision()
         {
             await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
             IsRecording = true;
             await speechToTextViewModel.RecognizeSpeechFromMic();
-
             RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language
             IsRecording = false;
+            if (RecognizedLang == "en") return;
+            else if (RecognizedLang == "es")
+                await translatorViewModel.TranslateTextToSpanish(enterCartIDValue);
+            EnterCartIDValue = translatorViewModel.TranslationResult;
         }
 
         public async Task OpenScanCartIDView(object sender, RoutedEventArgs e)
         {
-            var cartIDViewModel = new CartIDViewModel();
+            var cartIDViewModel = new CartIDViewModel(RecognizedLang);
             var cartIDView = new CartID { DataContext = cartIDViewModel };
 
             var currentWindow = System.Windows.Application.Current.MainWindow;

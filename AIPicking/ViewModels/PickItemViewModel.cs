@@ -170,6 +170,18 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        // New properties for labels and button text
+        public string CartIDLabel { get; set; } = "Cart ID";
+        public string TitleLabel { get; set; } = "Title";
+        public string LocationLabel { get; set; } = "Location";
+        public string QuantityLabel { get; set; } = "Quantity";
+        public string DescriptionLabel { get; set; } = "Description";
+        public string ItemsLeftLabel { get; set; } = "Items Left";
+        public string SerialNumberLabel { get; set; } = "Serial Number";
+        public string SkipItemButtonText { get; set; } = "Skip Item";
+        public string HomeButtonText { get; set; } = "Home";
+
         public ICommand SkipItemCommand { get; }
         public ICommand HomeCommand { get; }
         public ICommand TranslateCommand { get; } // Add TranslateCommand
@@ -210,28 +222,28 @@ namespace AIPicking.ViewModels
             // Initialize the array of Cart objects
             Carts = new Cart[]
             {
-                    new Cart("1")
-                    {
-                        Items = new List<PickingItem>
+                        new Cart("1")
                         {
-                            new PickingItem { CartID = "1", Quantity = "10", Title = "Sample Item 1", Location = "Aisle 3, Shelf 2", Description = "This is a sample.", ItemsLeft = "2", SerialNumber = "1" },
-                            new PickingItem { CartID = "1", Quantity = "5", Title = "Sample Item 2", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "1", SerialNumber = "2" }
-                        }
-                    },
-                    new Cart("2")
-                    {
-                        Items = new List<PickingItem>
+                            Items = new List<PickingItem>
+                            {
+                                new PickingItem { CartID = "1", Quantity = "10", Title = "Sample Item 1", Location = "Aisle 3, Shelf 2", Description = "This is a sample.", ItemsLeft = "2", SerialNumber = "1" },
+                                new PickingItem { CartID = "1", Quantity = "5", Title = "Sample Item 2", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "1", SerialNumber = "2" }
+                            }
+                        },
+                        new Cart("2")
                         {
-                            new PickingItem { CartID = "2", Quantity = "5", Title = "Sample Item 3", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "0", SerialNumber = "3" }
-                        }
-                    },
-                    new Cart("3")
-                    {
-                        Items = new List<PickingItem>
+                            Items = new List<PickingItem>
+                            {
+                                new PickingItem { CartID = "2", Quantity = "5", Title = "Sample Item 3", Location = "Aisle 4, Shelf 1", Description = "This is another sample.", ItemsLeft = "0", SerialNumber = "3" }
+                            }
+                        },
+                        new Cart("3")
                         {
-                            new PickingItem { CartID = "3", Quantity = "8", Title = "Sample Item 4", Location = "Aisle 5, Shelf 3", Description = "This is yet another sample.", ItemsLeft = "3", SerialNumber = "4" }
+                            Items = new List<PickingItem>
+                            {
+                                new PickingItem { CartID = "3", Quantity = "8", Title = "Sample Item 4", Location = "Aisle 5, Shelf 3", Description = "This is yet another sample.", ItemsLeft = "3", SerialNumber = "4" }
+                            }
                         }
-                    }
             };
 
             SkipItemCommand = new RelayCommand(OnSkipItem);
@@ -241,7 +253,7 @@ namespace AIPicking.ViewModels
             currentIndex = 0; // Initialize the index
             InitializeAsync(RecognizedLang);
         }
-        #region Tasks
+
         private async Task InitializeAsync(string RecognizedLang)
         {
             if (CartID.EndsWith(".") == true)
@@ -253,7 +265,24 @@ namespace AIPicking.ViewModels
             {
                 PickingItem = cart.Items[currentIndex]; // Set the PickingItem property to the current item in the cart
                 await TranslateItemAttributes(RecognizedLang);
-                await textToSpeechViewModel.SynthesizeAllInfo(PickingItem.CartID, PickingItem.Title, PickingItem.Quantity, PickingItem.Location, PickingItem.Description, PickingItem.ItemsLeft, PickingItem.SerialNumber);
+                await textToSpeechViewModel.SynthesizeAllInfo(
+                    PickingItem.CartID,
+                    PickingItem.Title,
+                    PickingItem.Quantity,
+                    PickingItem.Location,
+                    PickingItem.Description,
+                    PickingItem.ItemsLeft,
+                    PickingItem.SerialNumber,
+                    CartIDLabel,
+                    TitleLabel,
+                    QuantityLabel,
+                    LocationLabel,
+                    DescriptionLabel,
+                    ItemsLeftLabel,
+                    SerialNumberLabel,
+                    RecognizedLang,
+                    translatorViewModel
+                );
                 IsRecording = true;
                 await speechToTextViewModel.RecognizeSpeechFromMic();
                 RecognizedText = speechToTextViewModel.RecognizedText;
@@ -327,12 +356,23 @@ namespace AIPicking.ViewModels
             await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item");
         }
 
-        private async Task TranslateItemAttributes(string RecognizedLang)
+     
+async Task TranslateItemAttributes(string RecognizedLang)
         {
             if (PickingItem != null)
             {
                 if (RecognizedLang == "es")
                 {
+                    // Translate labels to Spanish
+                    CartIDLabel = await TranslateLabelToSpanish(CartIDLabel);
+                    TitleLabel = await TranslateLabelToSpanish(TitleLabel);
+                    LocationLabel = await TranslateLabelToSpanish(LocationLabel);
+                    QuantityLabel = await TranslateLabelToSpanish(QuantityLabel);
+                    DescriptionLabel = await TranslateLabelToSpanish(DescriptionLabel);
+                    ItemsLeftLabel = await TranslateLabelToSpanish(ItemsLeftLabel);
+                    SerialNumberLabel = await TranslateLabelToSpanish(SerialNumberLabel);
+
+                    // Translate item attributes to Spanish
                     await translatorViewModel.TranslateTextToSpanish(Title);
                     Title = translatorViewModel.TranslationResult;
 
@@ -353,6 +393,16 @@ namespace AIPicking.ViewModels
                 }
                 else
                 {
+                    // Translate labels to English
+                    CartIDLabel = await TranslateLabelToEnglish(CartIDLabel);
+                    TitleLabel = await TranslateLabelToEnglish(TitleLabel);
+                    LocationLabel = await TranslateLabelToEnglish(LocationLabel);
+                    QuantityLabel = await TranslateLabelToEnglish(QuantityLabel);
+                    DescriptionLabel = await TranslateLabelToEnglish(DescriptionLabel);
+                    ItemsLeftLabel = await TranslateLabelToEnglish(ItemsLeftLabel);
+                    SerialNumberLabel = await TranslateLabelToEnglish(SerialNumberLabel);
+
+                    // Translate item attributes to English
                     await translatorViewModel.TranslateTextToEnglish(Title);
                     Title = translatorViewModel.TranslationResult;
 
@@ -372,6 +422,16 @@ namespace AIPicking.ViewModels
                     SerialNumber = translatorViewModel.TranslationResult;
                 }
 
+                // Notify UI of label changes
+                OnPropertyChanged(nameof(CartIDLabel));
+                OnPropertyChanged(nameof(TitleLabel));
+                OnPropertyChanged(nameof(LocationLabel));
+                OnPropertyChanged(nameof(QuantityLabel));
+                OnPropertyChanged(nameof(DescriptionLabel));
+                OnPropertyChanged(nameof(ItemsLeftLabel));
+                OnPropertyChanged(nameof(SerialNumberLabel));
+
+                // Notify UI of item attribute changes
                 OnPropertyChanged(nameof(Title));
                 OnPropertyChanged(nameof(Description));
                 OnPropertyChanged(nameof(Location));
@@ -380,10 +440,19 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged(nameof(SerialNumber));
             }
         }
-        #endregion
 
+        private async Task<string> TranslateLabelToSpanish(string label)
+        {
+            await translatorViewModel.TranslateTextToSpanish(label);
+            return translatorViewModel.TranslationResult;
+        }
+
+        private async Task<string> TranslateLabelToEnglish(string label)
+        {
+            await translatorViewModel.TranslateTextToEnglish(label);
+            return translatorViewModel.TranslationResult;
+        }
         #region Buttons
-
 
         private async Task OnSkipItem()
         {

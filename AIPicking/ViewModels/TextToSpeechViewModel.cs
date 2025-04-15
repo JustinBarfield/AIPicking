@@ -56,30 +56,52 @@ namespace AIPicking.ViewModels
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }
         }
-        public async Task SynthesizeAllInfo(string CartID, string Title, string Quantity, string Location, string Description, string ItemsLeft, string SerialNumber)
+
+        public async Task SynthesizeAllInfo(
+            string CartID, string Title, string Quantity, string Location, string Description, string ItemsLeft, string SerialNumber,
+            string CartIDLabel, string TitleLabel, string QuantityLabel, string LocationLabel, string DescriptionLabel, string ItemsLeftLabel, string SerialNumberLabel,
+            string RecognizedLang, TranslatorViewModel translatorViewModel)
         {
+            // Translate labels if necessary
+            if (RecognizedLang == "es")
+            {
+                CartIDLabel = await TranslateLabel(CartIDLabel, translatorViewModel);
+                TitleLabel = await TranslateLabel(TitleLabel, translatorViewModel);
+                QuantityLabel = await TranslateLabel(QuantityLabel, translatorViewModel);
+                LocationLabel = await TranslateLabel(LocationLabel, translatorViewModel);
+                DescriptionLabel = await TranslateLabel(DescriptionLabel, translatorViewModel);
+                ItemsLeftLabel = await TranslateLabel(ItemsLeftLabel, translatorViewModel);
+                SerialNumberLabel = await TranslateLabel(SerialNumberLabel, translatorViewModel);
+            }
+
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+            speechConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-AvaMultilingualNeural";
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
-                string text = $"Item: {Title}, Cart ID: {CartID}, Quantity: {Quantity}, Location: {Location}, Description: {Description}, Items Left: {ItemsLeft}, Serial Number: {SerialNumber}";
+                string text = $"{TitleLabel}: {Title}, {CartIDLabel}: {CartID}, {QuantityLabel}: {Quantity}, {LocationLabel}: {Location}, {DescriptionLabel}: {Description}, {ItemsLeftLabel}: {ItemsLeft}, {SerialNumberLabel}: {SerialNumber}";
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }
 
             // Ask if the user is at the shelf
-            await AskIfAtShelf();
+            await AskIfAtShelf(RecognizedLang);
         }
 
-        private async Task AskIfAtShelf()
+        private async Task<string> TranslateLabel(string label, TranslatorViewModel translatorViewModel)
+        {
+            await translatorViewModel.TranslateTextToSpanish(label);
+            return translatorViewModel.TranslationResult;
+        }
+
+        private async Task AskIfAtShelf(string RecognizedLang)
         {
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+            speechConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-AvaMultilingualNeural";
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
-                string text = "Are you at the shelf?";
+                string text = RecognizedLang == "es" ? "¿Estás en el estante?" : "Are you at the shelf?";
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }

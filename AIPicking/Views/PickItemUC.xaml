@@ -8,32 +8,32 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="400">
-            
-            <TextBlock Text="Cart ID" FontSize="16" Margin="0,0,0,5"/>
+
+            <TextBlock Text="{Binding CartIDLabel}" FontSize="16" Margin="0,0,0,5"/>
             <TextBox Text="{Binding CartID, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Title" FontSize="16" Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding TitleLabel}" FontSize="16" Margin="0,0,0,5"/>
             <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Location" FontSize="16" Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding LocationLabel}" FontSize="16" Margin="0,0,0,5"/>
             <TextBox Text="{Binding Location, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Quantity" FontSize="16" Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding QuantityLabel}" FontSize="16" Margin="0,0,0,5"/>
             <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Description" FontSize="16" Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding DescriptionLabel}" FontSize="16" Margin="0,0,0,5"/>
             <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Items Left" FontSize="16" Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding ItemsLeftLabel}" FontSize="16" Margin="0,0,0,5"/>
             <TextBox Text="{Binding ItemsLeft, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Serial Number" FontSize="16" Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding SerialNumberLabel}" FontSize="16" Margin="0,0,0,5"/>
             <TextBox Text="{Binding SerialNumber, UpdateSourceTrigger=PropertyChanged}" Width="300" Height="30" Margin="0,0,0,10"/>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                <Button Content="Skip Item" Width="100" Height="30" Margin="5" Command="{Binding SkipItemCommand}"/>
-                <Button Content="Home" Width="100" Height="30" Margin="5" Command="{Binding HomeCommand}"/>
-                </StackPanel>
+                <Button Content="{Binding SkipItemButtonText}" Width="100" Height="30" Margin="5" Command="{Binding SkipItemCommand}"/>
+                <Button Content="{Binding HomeButtonText}" Width="100" Height="30" Margin="5" Command="{Binding HomeCommand}"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </UserControl>

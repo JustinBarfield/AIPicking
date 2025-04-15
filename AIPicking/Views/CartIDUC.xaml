@@ -13,15 +13,14 @@
     </UserControl.Resources>
     <Grid>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="Scan Cart ID" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+            <TextBlock Text="{Binding ScanCartIDText}" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10">
-                <TextBlock Text="Cart ID:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding CartIDLabelText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <TextBox Text="{Binding CartID, UpdateSourceTrigger=PropertyChanged}" Width="200" Height="30" Margin="0,0,10,0" />
             </StackPanel>
             <Ellipse Width="20" Height="20" Fill="Red" Visibility="{Binding IsRecording, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,10"/>
 
-            <Button Content="Enter" Command="{Binding EnterCommand}" />
-            <Button Content="Analyze" Width="150" Height="30" Command="{Binding AnalyzeCommand}" Margin="0,0,0,10"/>
+            <Button Content="{Binding EnterButtonText}" Command="{Binding EnterCommand}" />
         </StackPanel>
     </Grid>
 </UserControl>
