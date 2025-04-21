@@ -20,6 +20,7 @@ namespace AIPicking
         private readonly SpeechToTextViewModel speechToTextViewModel;
         private readonly TranslatorViewModel translatorViewModel;
 
+       
         private string textBoxValue;
         
         public string TextBoxValue
@@ -96,15 +97,14 @@ namespace AIPicking
             textToSpeechViewModel = new TextToSpeechViewModel();
             speechToTextViewModel = new SpeechToTextViewModel();
             translatorViewModel = new TranslatorViewModel();
-            SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech(TextBoxValue));
+            SynthesizeSpeechCommand = new RelayCommand(async () => await textToSpeechViewModel.SynthesizeSpeech(TextBoxValue, RecognizedLang));
             TranslateCommand = new RelayCommand(async () =>
             {
                 await LanguageDecision();
                 if (RecognizedLang == "es")
-                    await translatorViewModel.TranslateTextToSpanish(TextBoxValue);
-                else
-                    await translatorViewModel.TranslateTextToEnglish(TextBoxValue);
-                TextBoxValue = translatorViewModel.TranslationResult;
+                    await translatorViewModel.TranslateTextToSpanish(EnterCartIDValue);
+
+                EnterCartIDValue = translatorViewModel.TranslationResult;
             });
             RecognizeSpeechFromMicCommand = new RelayCommand(async () =>
             {
@@ -125,7 +125,7 @@ namespace AIPicking
 
         public async Task LanguageDecision()
         {
-            await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?");
+            await textToSpeechViewModel.SynthesizeSpeech("What language would you like to continue in?", RecognizedLang);
             IsRecording = true;
             await speechToTextViewModel.RecognizeSpeechFromMic();
             RecognizedLang = speechToTextViewModel.RecognizedLang; // Set the recognized language

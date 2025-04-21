@@ -32,7 +32,7 @@ namespace AIPicking.ViewModels
 
         private string recognizedText;
 
-        private bool isRecording;
+       
         private string ticketNumber;
 
         public string RecognizedText
@@ -56,6 +56,7 @@ namespace AIPicking.ViewModels
             }
         }
 
+        private bool isRecording;
         public bool IsRecording
         {
             get { return isRecording; }
@@ -124,7 +125,6 @@ namespace AIPicking.ViewModels
         }
         #endregion
        
-
         public CartIDViewModel(string recognizedLang)
         {
             RecognizedLang=recognizedLang;
@@ -158,13 +158,13 @@ namespace AIPicking.ViewModels
             string message = "Say the CartID";
             if (RecognizedLang == "en")
             {
-                await textToSpeechViewModel.SynthesizeSpeech(message);
+                await textToSpeechViewModel.SynthesizeSpeech(message,RecognizedLang);
             }
             else if (RecognizedLang == "es")
             {
                 await translatorViewModel.TranslateTextToSpanish(message);
                 message = translatorViewModel.TranslationResult;
-                await textToSpeechViewModel.SynthesizeSpeech(message);
+                await textToSpeechViewModel.SynthesizeSpeech(message, RecognizedLang);
             }
 
             IsRecording = true;

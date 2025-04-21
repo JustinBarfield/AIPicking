@@ -170,6 +170,7 @@ namespace AIPicking.ViewModels
                 OnPropertyChanged();
             }
         }
+        
 
         // New properties for labels and button text
         public string CartIDLabel { get; set; } = "Cart ID";
@@ -212,6 +213,7 @@ namespace AIPicking.ViewModels
 
         public PickItemViewModel(string cartID, string RecognizedLang)
         {
+            recognizedLang = RecognizedLang;
             textToSpeechViewModel = new TextToSpeechViewModel();
 
             speechToTextViewModel = new SpeechToTextViewModel();
@@ -254,8 +256,11 @@ namespace AIPicking.ViewModels
             InitializeAsync(RecognizedLang);
         }
 
+        #region Tasks
+
         private async Task InitializeAsync(string RecognizedLang)
         {
+            recognizedLang = RecognizedLang;
             if (CartID.EndsWith(".") == true)
                 CartID = CartID.Substring(0, CartID.Length - 1);
 
@@ -286,6 +291,7 @@ namespace AIPicking.ViewModels
                 IsRecording = true;
                 await speechToTextViewModel.RecognizeSpeechFromMic();
                 RecognizedText = speechToTextViewModel.RecognizedText;
+                RecognizedLang = speechToTextViewModel.RecognizedLang;
                 IsRecording = false;
                 var intent = await _intentViewModel.AnalyzeConversationAsync(RecognizedText, "en");
 
@@ -294,7 +300,7 @@ namespace AIPicking.ViewModels
             }
             else
             {
-                await textToSpeechViewModel.SynthesizeSpeech("All items have been picked.");
+                await textToSpeechViewModel.SynthesizeSpeech("All items have been picked.", RecognizedLang);
             }
         }
 
@@ -315,7 +321,7 @@ namespace AIPicking.ViewModels
                     await HandleYesResponse();
                     break;
                 default:
-                    await textToSpeechViewModel.SynthesizeSpeech("I didn't understand that. Please try again.");
+                    await HandleYesResponse();
                     break;
             }
         }
@@ -332,7 +338,7 @@ namespace AIPicking.ViewModels
                 {
                     currentIndex = 0; // Reset the index if it exceeds the number of items
                 }
-                await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item on the ticket");
+                await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item on the ticket", RecognizedLang);
                 await InitializeAsync(RecognizedLang); // Process the next item
             }
         }
@@ -340,24 +346,23 @@ namespace AIPicking.ViewModels
         public async Task HandleNoResponse()
         {
             // Implement the logic for handling "no" response in PickItemViewModel
-            await textToSpeechViewModel.SynthesizeSpeech("Please try again");
+            await textToSpeechViewModel.SynthesizeSpeech("Please try again", RecognizedLang);
             await InitializeAsync(RecognizedLang);
         }
 
         public async Task HandleArrivedResponse()
         {
             // Implement the logic for handling "arrived" response in PickItemViewModel
-            await textToSpeechViewModel.SynthesizeSpeech("You said you've arrived");
+            await textToSpeechViewModel.SynthesizeSpeech("You said you've arrived", RecognizedLang);
         }
 
         public async Task HandlePickedItemResponse()
         {
             // Implement the logic for handling "picked item" response in PickItemViewModel
-            await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item");
+            await textToSpeechViewModel.SynthesizeSpeech("You said you've picked the item", RecognizedLang);
         }
 
-     
-async Task TranslateItemAttributes(string RecognizedLang)
+        async Task TranslateItemAttributes(string RecognizedLang)
         {
             if (PickingItem != null)
             {
@@ -440,7 +445,6 @@ async Task TranslateItemAttributes(string RecognizedLang)
                 OnPropertyChanged(nameof(SerialNumber));
             }
         }
-
         private async Task<string> TranslateLabelToSpanish(string label)
         {
             await translatorViewModel.TranslateTextToSpanish(label);
@@ -452,12 +456,14 @@ async Task TranslateItemAttributes(string RecognizedLang)
             await translatorViewModel.TranslateTextToEnglish(label);
             return translatorViewModel.TranslationResult;
         }
+        #endregion
+
         #region Buttons
 
         private async Task OnSkipItem()
         {
             // Skip the current item and move to the next item
-            await textToSpeechViewModel.SynthesizeSpeech("skipping item");
+            await textToSpeechViewModel.SynthesizeSpeech("skipping item", RecognizedLang);
             var cart = Carts.FirstOrDefault(c => c.CartID == CartID);
             if (cart != null)
             {

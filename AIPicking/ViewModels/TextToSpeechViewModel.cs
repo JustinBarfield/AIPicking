@@ -45,12 +45,16 @@ namespace AIPicking.ViewModels
         }
 
         #region Tasks
-        public async Task SynthesizeSpeech(string text)
+        public async Task SynthesizeSpeech(string text,string RecognizedLang)
         {
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+            speechConfig.SpeechSynthesisVoiceName = "en-US-GuyNeural";
+            if (RecognizedLang == "es")
+            {
+                speechConfig.SpeechSynthesisVoiceName = "es-ES-AlvaroNeural";
+            }
 
-            using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
+                using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
@@ -75,7 +79,7 @@ namespace AIPicking.ViewModels
             }
 
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-AvaMultilingualNeural";
+            speechConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-GuyNeural";
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
@@ -97,7 +101,7 @@ namespace AIPicking.ViewModels
         private async Task AskIfAtShelf(string RecognizedLang)
         {
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-AvaMultilingualNeural";
+            speechConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ?  "es-ES-AlvaroNeural" : "en-US-GuyNeural";
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
