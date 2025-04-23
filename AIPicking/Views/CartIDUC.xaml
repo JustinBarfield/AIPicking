@@ -12,6 +12,12 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid>
+        <Border Background="#5F259F" />
+        <Image Source="C:\Users\jlmur\Downloads\452700521_926197212884300_7152706492949488141_n.jpg" 
+Width="200" Height="100" 
+HorizontalAlignment="Center" 
+VerticalAlignment="Top" 
+Margin="0,10,0,20"/>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
             <TextBlock Text="{Binding ScanCartIDText}" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10">

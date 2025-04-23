@@ -170,6 +170,7 @@ namespace AIPicking.ViewModels
             CartID = speechToTextViewModel.RecognizedText;
 
             IsRecording = false;
+            await OpenPickItemView(RecognizedLang);
         }
         private void TranslateToSpanish()
         {

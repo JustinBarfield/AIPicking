@@ -332,8 +332,15 @@ namespace AIPicking.ViewModels
 
         public async Task HandleYesResponse()
         {
-            // Implement the logic for handling "yes" response in PickItemViewModel
-            // Go to the next item
+            // Translate the message based on the recognized language
+            string message = "Great, let's move on to the next item on the ticket";
+            if (RecognizedLang == "es")
+            {
+                await translatorViewModel.TranslateTextToSpanish(message);
+                message = translatorViewModel.TranslationResult;
+            }
+
+            // Get the current cart
             var cart = Carts.FirstOrDefault(c => c.CartID == CartID);
             if (cart != null)
             {
@@ -342,8 +349,12 @@ namespace AIPicking.ViewModels
                 {
                     currentIndex = 0; // Reset the index if it exceeds the number of items
                 }
-                await textToSpeechViewModel.SynthesizeSpeech("Great, let's move on to the next item on the ticket", RecognizedLang);
-                await InitializeAsync(RecognizedLang); // Process the next item
+
+                // Synthesize the translated message
+                await textToSpeechViewModel.SynthesizeSpeech(message, RecognizedLang);
+
+                // Process the next item
+                await InitializeAsync(RecognizedLang);
             }
         }
 

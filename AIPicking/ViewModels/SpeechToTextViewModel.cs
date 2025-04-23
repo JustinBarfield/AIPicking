@@ -143,6 +143,7 @@ namespace AIPicking.ViewModels
             else
             {
                 Console.WriteLine("No speech recognized.");
+                await RecognizeSpeechFromMic();
             }
         }
 

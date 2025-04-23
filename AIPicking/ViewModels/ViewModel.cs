@@ -142,8 +142,8 @@ namespace AIPicking
             var currentWindow = System.Windows.Application.Current.MainWindow;
             currentWindow.Content = cartIDView;
             currentWindow.Title = "Scan Cart ID";
-            currentWindow.Width = 800;
-            currentWindow.Height = 600;
+            currentWindow.Width = 500;
+            currentWindow.Height = 800;
         }
 
         #endregion
