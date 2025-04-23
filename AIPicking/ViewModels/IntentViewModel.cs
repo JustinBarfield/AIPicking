@@ -70,7 +70,6 @@ public class IntentViewModel : INotifyPropertyChanged
     public ICommand SynthesizeSpeechCommand { get; }
     private IResponseHandler responseHandler;
     #endregion
-
     public IntentViewModel(IResponseHandler responseHandler)
     {
         client = new ConversationAnalysisClient(endpoint, credential);
@@ -80,7 +79,6 @@ public class IntentViewModel : INotifyPropertyChanged
     {
         client = new ConversationAnalysisClient(endpoint, credential);
     }
-   
     static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
     {
         switch (speechSynthesisResult.Reason)
@@ -101,7 +99,6 @@ public class IntentViewModel : INotifyPropertyChanged
                 break;
         }
     }
-
     #region Tasks
     public async Task<string> AnalyzeConversationAsync(string InputText, string RegisteredLang)
     {
@@ -219,7 +216,6 @@ public class IntentViewModel : INotifyPropertyChanged
         }
     }
     #endregion
-
     public event PropertyChangedEventHandler PropertyChanged;
     protected virtual void OnPropertyChanged(string propertyName)
     {

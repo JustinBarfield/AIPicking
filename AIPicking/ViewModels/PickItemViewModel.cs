@@ -206,11 +206,9 @@ namespace AIPicking.ViewModels
         }
 
         #endregion
-
         public PickItemViewModel()
         {
         }
-
         public PickItemViewModel(string cartID, string RecognizedLang)
         {
             recognizedLang = RecognizedLang;
@@ -255,7 +253,6 @@ namespace AIPicking.ViewModels
             currentIndex = 0; // Initialize the index
             InitializeAsync(RecognizedLang);
         }
-
         #region Tasks
 
         private async Task InitializeAsync(string RecognizedLang)
@@ -301,6 +298,13 @@ namespace AIPicking.ViewModels
             else
             {
                 await textToSpeechViewModel.SynthesizeSpeech("All items have been picked.", RecognizedLang);
+
+                Title = "";
+                Description = "";
+                Location = "";              
+                Quantity = "";
+                ItemsLeft = "";
+                SerialNumber = "";
             }
         }
 
@@ -399,32 +403,32 @@ namespace AIPicking.ViewModels
                 else
                 {
                     // Translate labels to English
-                    CartIDLabel = await TranslateLabelToEnglish(CartIDLabel);
-                    TitleLabel = await TranslateLabelToEnglish(TitleLabel);
-                    LocationLabel = await TranslateLabelToEnglish(LocationLabel);
-                    QuantityLabel = await TranslateLabelToEnglish(QuantityLabel);
-                    DescriptionLabel = await TranslateLabelToEnglish(DescriptionLabel);
-                    ItemsLeftLabel = await TranslateLabelToEnglish(ItemsLeftLabel);
-                    SerialNumberLabel = await TranslateLabelToEnglish(SerialNumberLabel);
+                    //CartIDLabel = await TranslateLabelToEnglish(CartIDLabel);
+                    //TitleLabel = await TranslateLabelToEnglish(TitleLabel);
+                    //LocationLabel = await TranslateLabelToEnglish(LocationLabel);
+                    //QuantityLabel = await TranslateLabelToEnglish(QuantityLabel);
+                    //DescriptionLabel = await TranslateLabelToEnglish(DescriptionLabel);
+                    //ItemsLeftLabel = await TranslateLabelToEnglish(ItemsLeftLabel);
+                    //SerialNumberLabel = await TranslateLabelToEnglish(SerialNumberLabel);
 
-                    // Translate item attributes to English
-                    await translatorViewModel.TranslateTextToEnglish(Title);
-                    Title = translatorViewModel.TranslationResult;
+                    //// Translate item attributes to English
+                    //await translatorViewModel.TranslateTextToEnglish(Title);
+                    //Title = translatorViewModel.TranslationResult;
 
-                    await translatorViewModel.TranslateTextToEnglish(Description);
-                    Description = translatorViewModel.TranslationResult;
+                    //await translatorViewModel.TranslateTextToEnglish(Description);
+                    //Description = translatorViewModel.TranslationResult;
 
-                    await translatorViewModel.TranslateTextToEnglish(Location);
-                    Location = translatorViewModel.TranslationResult;
+                    //await translatorViewModel.TranslateTextToEnglish(Location);
+                    //Location = translatorViewModel.TranslationResult;
 
-                    await translatorViewModel.TranslateTextToEnglish(Quantity);
-                    Quantity = translatorViewModel.TranslationResult;
+                    //await translatorViewModel.TranslateTextToEnglish(Quantity);
+                    //Quantity = translatorViewModel.TranslationResult;
 
-                    await translatorViewModel.TranslateTextToEnglish(ItemsLeft);
-                    ItemsLeft = translatorViewModel.TranslationResult;
+                    //await translatorViewModel.TranslateTextToEnglish(ItemsLeft);
+                    //ItemsLeft = translatorViewModel.TranslationResult;
 
-                    await translatorViewModel.TranslateTextToEnglish(SerialNumber);
-                    SerialNumber = translatorViewModel.TranslationResult;
+                    //await translatorViewModel.TranslateTextToEnglish(SerialNumber);
+                    //SerialNumber = translatorViewModel.TranslationResult;
                 }
 
                 // Notify UI of label changes

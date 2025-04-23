@@ -90,7 +90,6 @@ namespace AIPicking
         public ICommand TranslateCommand { get; }
 
         #endregion
-
         public ViewModel()
         {
             EnterCartIDValue = "Scan Cart ID";
@@ -120,7 +119,6 @@ namespace AIPicking
         {
             await LanguageDecision();
         }
-
         #region Tasks
 
         public async Task LanguageDecision()
@@ -149,15 +147,11 @@ namespace AIPicking
         }
 
         #endregion
-
-
         public event PropertyChangedEventHandler PropertyChanged;
-
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
         public class RelayCommand : ICommand
         {
             private readonly Func<Task> _execute;

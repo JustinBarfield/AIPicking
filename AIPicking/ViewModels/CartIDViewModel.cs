@@ -124,7 +124,6 @@ namespace AIPicking.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
-       
         public CartIDViewModel(string recognizedLang)
         {
             RecognizedLang=recognizedLang;
@@ -140,7 +139,6 @@ namespace AIPicking.ViewModels
 
             InitializeAsync(recognizedLang);
         }
-
         #region Tasks
         private async Task InitializeAsync(string recognizedLang)
         {
