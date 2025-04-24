@@ -129,16 +129,16 @@ namespace AIPicking.ViewModels
                 Azure.AI.TextAnalytics.DetectedLanguage detectedLanguage = client.DetectLanguage(RecognizedText);
                 RecognizedLang = detectedLanguage.Iso6391Name;
 
-                string thankYouMessage = RecognizedLang == "es" ? "Gracias" : "Thank you";
+                //string thankYouMessage = RecognizedLang == "es" ? "Gracias" : "Thank you";
 
-                var thankYouConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-                thankYouConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-GuyNeural";
+                //var thankYouConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+                //thankYouConfig.SpeechSynthesisVoiceName = RecognizedLang == "es" ? "es-ES-AlvaroNeural" : "en-US-GuyNeural";
 
-                using (var speechSynthesizer = new SpeechSynthesizer(thankYouConfig))
-                {
-                    var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(thankYouMessage);
-                    OutputSpeechSynthesisResult(speechSynthesisResult, thankYouMessage);
-                }
+                //using (var speechSynthesizer = new SpeechSynthesizer(thankYouConfig))
+                //{
+                //    var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(thankYouMessage);
+                //    OutputSpeechSynthesisResult(speechSynthesisResult, thankYouMessage);
+                //}
             }
             else
             {
@@ -146,7 +146,6 @@ namespace AIPicking.ViewModels
                 await RecognizeSpeechFromMic();
             }
         }
-
         
     }
 }

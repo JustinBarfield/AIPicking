@@ -132,6 +132,7 @@ namespace AIPicking
             else if (RecognizedLang == "es")
                 await translatorViewModel.TranslateTextToSpanish(enterCartIDValue);
             EnterCartIDValue = translatorViewModel.TranslationResult;
+            OpenScanCartIDView(null, null);
         }
 
         public async Task OpenScanCartIDView(object sender, RoutedEventArgs e)

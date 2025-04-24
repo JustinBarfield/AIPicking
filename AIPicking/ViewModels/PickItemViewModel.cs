@@ -305,6 +305,7 @@ namespace AIPicking.ViewModels
                 Quantity = "";
                 ItemsLeft = "";
                 SerialNumber = "";
+                 await OnHome();
             }
         }
 
