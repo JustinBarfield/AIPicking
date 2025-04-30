@@ -83,7 +83,7 @@ namespace AIPicking.ViewModels
 
             using (var speechSynthesizer = new SpeechSynthesizer(speechConfig))
             {
-                string text = $"{CartIDLabel}: {CartID},{TitleLabel}: {Title},{LocationLabel}: {Location},  {QuantityLabel}: {Quantity},  {DescriptionLabel}: {Description}, {ItemsLeftLabel}: {ItemsLeft}, {SerialNumberLabel}: {SerialNumber}";
+                string text = $"{TitleLabel}: {Title},{LocationLabel}: {Location},  {ItemsLeftLabel}: {ItemsLeft}";
                 var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
                 OutputSpeechSynthesisResult(speechSynthesisResult, text);
             }

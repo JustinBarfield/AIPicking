@@ -171,8 +171,6 @@ namespace AIPicking.ViewModels
             }
         }
         
-
-        // New properties for labels and button text
         public string CartIDLabel { get; set; } = "Cart ID";
         public string TitleLabel { get; set; } = "Title";
         public string LocationLabel { get; set; } = "Location";
@@ -292,7 +290,6 @@ namespace AIPicking.ViewModels
                 IsRecording = false;
                 var intent = await _intentViewModel.AnalyzeConversationAsync(RecognizedText, "en");
 
-                // Handle the intent using the new method
                 await HandleIntent(intent);
             }
             else
@@ -497,13 +494,11 @@ namespace AIPicking.ViewModels
             var viewModel = new ViewModel();
             var view = new HomePageUC { DataContext = viewModel };
 
-            // Assuming you have a reference to the current window
             var currentWindow = System.Windows.Application.Current.MainWindow;
 
             // Update the content of the current window
             currentWindow.Content = view;
 
-            // Optionally, you can update the title or other properties of the current window
             currentWindow.Title = "Main Window";
             currentWindow.Width = 400;
             currentWindow.Height = 300;

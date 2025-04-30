@@ -10,7 +10,7 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid>
-        <Border Background="#5F259F" />
+        <Border Background="#613493" />
         <Image Source="C:\Users\jlmur\Downloads\452700521_926197212884300_7152706492949488141_n.jpg" 
 Width="200" Height="100" 
 HorizontalAlignment="Center" 
